@@ -23,15 +23,15 @@ RSpec.describe WaniStudyMaterial, type: :model do
     let!(:material_with_synonyms) { create(:wani_study_material, user: user, wani_subject: subject1, meaning_synonyms: [ 'test' ]) }
 
     it 'filters visible study materials' do
-      expect(WaniStudyMaterial.visible.count).to eq(2)
+      expect(user.wani_study_materials.visible.count).to eq(2)
     end
 
     it 'filters study materials with notes' do
-      expect(WaniStudyMaterial.with_notes.count).to eq(1)
+      expect(user.wani_study_materials.with_notes.count).to eq(1)
     end
 
     it 'filters study materials with synonyms' do
-      expect(WaniStudyMaterial.with_synonyms.count).to eq(1)
+      expect(user.wani_study_materials.with_synonyms.count).to eq(1)
     end
   end
 end

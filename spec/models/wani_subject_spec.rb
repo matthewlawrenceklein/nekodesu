@@ -22,18 +22,18 @@ RSpec.describe WaniSubject, type: :model do
     let!(:radical_2) { create(:wani_subject, user: user, subject_type: 'radical', level: 1, hidden_at: Time.current) }
 
     it 'filters by subject type' do
-      expect(WaniSubject.radicals.count).to eq(2)
-      expect(WaniSubject.kanji.count).to eq(1)
-      expect(WaniSubject.vocabulary.count).to eq(1)
+      expect(user.wani_subjects.radicals.count).to eq(2)
+      expect(user.wani_subjects.kanji.count).to eq(1)
+      expect(user.wani_subjects.vocabulary.count).to eq(1)
     end
 
     it 'filters by level' do
-      expect(WaniSubject.by_level(1).count).to eq(3)
-      expect(WaniSubject.by_level(2).count).to eq(1)
+      expect(user.wani_subjects.by_level(1).count).to eq(3)
+      expect(user.wani_subjects.by_level(2).count).to eq(1)
     end
 
     it 'filters visible subjects' do
-      expect(WaniSubject.visible.count).to eq(3)
+      expect(user.wani_subjects.visible.count).to eq(3)
     end
   end
 

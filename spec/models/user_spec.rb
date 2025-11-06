@@ -16,8 +16,8 @@ RSpec.describe User, type: :model do
     end
 
     it 'validates email uniqueness' do
-      create(:user, email: 'test@example.com')
-      duplicate_user = build(:user, email: 'test@example.com')
+      user1 = create(:user)
+      duplicate_user = build(:user, email: user1.email)
       expect(duplicate_user).not_to be_valid
     end
   end
