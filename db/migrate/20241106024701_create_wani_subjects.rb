@@ -21,7 +21,7 @@ class CreateWaniSubjects < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :wani_subjects, [:user_id, :external_id], unique: true
+    add_index :wani_subjects, [ :user_id, :external_id ], unique: true
     add_index :wani_subjects, :subject_type
     add_index :wani_subjects, :level
   end

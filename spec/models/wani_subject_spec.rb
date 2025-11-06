@@ -8,7 +8,7 @@ RSpec.describe WaniSubject, type: :model do
 
   describe 'validations' do
     subject { build(:wani_subject) }
-    
+
     it { should validate_presence_of(:external_id) }
     it { should validate_presence_of(:subject_type) }
     it { should validate_inclusion_of(:subject_type).in_array(WaniSubject::SUBJECT_TYPES) }

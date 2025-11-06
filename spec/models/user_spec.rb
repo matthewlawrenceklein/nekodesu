@@ -8,7 +8,7 @@ RSpec.describe User, type: :model do
 
   describe 'validations' do
     it { should validate_presence_of(:email) }
-    
+
     it 'validates email format' do
       user = build(:user, email: 'invalid-email')
       expect(user).not_to be_valid

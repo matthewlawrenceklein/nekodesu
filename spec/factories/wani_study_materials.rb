@@ -17,7 +17,7 @@ FactoryBot.define do
     end
 
     trait :with_synonyms do
-      meaning_synonyms { ['synonym1', 'synonym2'] }
+      meaning_synonyms { [ 'synonym1', 'synonym2' ] }
     end
 
     trait :hidden do

@@ -10,9 +10,9 @@ FactoryBot.define do
     meaning_mnemonic { 'Test mnemonic for meaning' }
     reading_mnemonic { 'Test mnemonic for reading' }
     document_url { 'https://www.wanikani.com/kanji/one' }
-    meanings { [{ 'meaning' => 'One', 'primary' => true, 'accepted_answer' => true }] }
+    meanings { [ { 'meaning' => 'One', 'primary' => true, 'accepted_answer' => true } ] }
     auxiliary_meanings { [] }
-    readings { [{ 'reading' => 'いち', 'primary' => true, 'accepted_answer' => true, 'type' => 'onyomi' }] }
+    readings { [ { 'reading' => 'いち', 'primary' => true, 'accepted_answer' => true, 'type' => 'onyomi' } ] }
     component_subject_ids { [] }
     hidden_at { nil }
     created_at_wanikani { Time.current }

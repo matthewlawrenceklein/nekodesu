@@ -78,11 +78,11 @@ end
 group :test do
   # RSpec matchers and helpers
   gem "shoulda-matchers", "~> 6.0"
-  
+
   # Use system testing
   gem "capybara"
   gem "selenium-webdriver"
-  
+
   # Test coverage
   gem "simplecov", require: false
 end

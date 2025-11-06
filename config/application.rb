@@ -23,5 +23,8 @@ module App
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Configure GoodJob as the Active Job queue adapter
+    config.active_job.queue_adapter = :good_job
   end
 end

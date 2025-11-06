@@ -15,7 +15,7 @@ class CreateWaniStudyMaterials < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :wani_study_materials, [:user_id, :external_id], unique: true
+    add_index :wani_study_materials, [ :user_id, :external_id ], unique: true
     add_index :wani_study_materials, :subject_id
   end
 end

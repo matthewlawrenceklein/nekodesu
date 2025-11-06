@@ -8,7 +8,7 @@ RSpec.describe WaniStudyMaterial, type: :model do
 
   describe 'validations' do
     subject { build(:wani_study_material) }
-    
+
     it { should validate_presence_of(:external_id) }
     it { should validate_presence_of(:subject_id) }
     it { should validate_presence_of(:subject_type) }
@@ -20,7 +20,7 @@ RSpec.describe WaniStudyMaterial, type: :model do
     let!(:subject2) { create(:wani_subject, user: user) }
     let!(:material_with_note) { create(:wani_study_material, user: user, wani_subject: subject1, hidden: false, meaning_note: 'test note') }
     let!(:material_hidden) { create(:wani_study_material, user: user, wani_subject: subject2, hidden: true) }
-    let!(:material_with_synonyms) { create(:wani_study_material, user: user, wani_subject: subject1, meaning_synonyms: ['test']) }
+    let!(:material_with_synonyms) { create(:wani_study_material, user: user, wani_subject: subject1, meaning_synonyms: [ 'test' ]) }
 
     it 'filters visible study materials' do
       expect(WaniStudyMaterial.visible.count).to eq(2)
