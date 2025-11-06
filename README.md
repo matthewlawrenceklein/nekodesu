@@ -122,6 +122,31 @@ db/
 └── seeds.rb         # Seed data
 ```
 
+## Background Jobs
+
+This project uses GoodJob for background job processing with PostgreSQL.
+
+### Monitoring Jobs
+
+Access the GoodJob dashboard at: `http://localhost:3000/good_job`
+
+### Scheduled Jobs
+
+- **WaniKani Sync**: Runs every 6 hours to sync data for all users with configured API keys
+
+### Manual Sync
+
+```bash
+# Sync all users
+docker compose exec web rails wanikani:sync_all
+
+# Sync specific user
+docker compose exec web rails "wanikani:sync[USER_ID]"
+
+# Test API connection
+docker compose exec web rails wanikani:test_connection
+```
+
 ## Testing
 
 This project uses RSpec for testing with FactoryBot for fixtures and SimpleCov for coverage.

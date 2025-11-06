@@ -1,4 +1,10 @@
 namespace :wanikani do
+  desc "Sync WaniKani data for all users"
+  task sync_all: :environment do
+    WanikaniSyncAllUsersJob.perform_now
+    puts "Sync jobs queued for all users with WaniKani configured"
+  end
+
   desc "Sync WaniKani data for a user"
   task :sync, [ :user_id ] => :environment do |t, args|
     user_id = args[:user_id] || User.first&.id
