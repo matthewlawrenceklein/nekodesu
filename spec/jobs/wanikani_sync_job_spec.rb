@@ -38,6 +38,5 @@ RSpec.describe WanikaniSyncJob, type: :job do
           .with("User #{user.id} does not have WaniKani configured")
       end
     end
-
   end
 end
