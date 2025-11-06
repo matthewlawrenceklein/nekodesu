@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:16
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nekodesu_development
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails server -b 0.0.0.0"
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/nekodesu_development
+      RAILS_ENV: development
+      WANIKANI_API_KEY: ${WANIKANI_API_KEY}
+      MARUMORI_API_KEY: ${MARUMORI_API_KEY}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+    stdin_open: true
+    tty: true
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: bundle exec good_job start
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/nekodesu_development
+      RAILS_ENV: development
+      WANIKANI_API_KEY: ${WANIKANI_API_KEY}
+      MARUMORI_API_KEY: ${MARUMORI_API_KEY}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+
+volumes:
+  postgres_data:
+  bundle_cache:
