@@ -29,7 +29,9 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/nekodesu_development
+      POSTGRES_HOST: db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       RAILS_ENV: development
       WANIKANI_API_KEY: ${WANIKANI_API_KEY}
       MARUMORI_API_KEY: ${MARUMORI_API_KEY}
@@ -49,7 +51,9 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/nekodesu_development
+      POSTGRES_HOST: db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       RAILS_ENV: development
       WANIKANI_API_KEY: ${WANIKANI_API_KEY}
       MARUMORI_API_KEY: ${MARUMORI_API_KEY}
