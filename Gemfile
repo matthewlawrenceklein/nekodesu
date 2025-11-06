@@ -77,7 +77,7 @@ end
 
 group :test do
   # RSpec matchers and helpers
-  gem "shoulda-matchers", "~> 6.0"
+  gem "shoulda-matchers", "~> 7.0"
 
   # Use system testing
   gem "capybara"
