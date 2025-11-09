@@ -29,8 +29,8 @@ class GenerateDialoguesJob < ApplicationJob
         Rails.logger.error("Failed to generate dialogue #{i + 1}/#{count}: #{e.message}")
       end
 
-      # Small delay between generations to avoid rate limits
-      sleep(2) if i < count - 1
+      # Small delay between generations to avoid rate limits (skip in test)
+      sleep(2) if i < count - 1 && !Rails.env.test?
     end
 
     Rails.logger.info(

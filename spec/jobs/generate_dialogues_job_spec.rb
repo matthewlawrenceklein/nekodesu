@@ -8,6 +8,7 @@ RSpec.describe GenerateDialoguesJob, type: :job do
   before do
     allow(DialogueGenerationService).to receive(:new).and_return(service)
     allow(service).to receive(:generate).and_return(dialogue)
+    allow_any_instance_of(GenerateDialoguesJob).to receive(:sleep)
   end
 
   describe "#perform" do
