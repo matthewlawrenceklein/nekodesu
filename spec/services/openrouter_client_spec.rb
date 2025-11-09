@@ -33,10 +33,12 @@ RSpec.describe OpenrouterClient do
 
     it "calls the OpenRouter client with correct parameters" do
       expect_any_instance_of(OpenRouter::Client).to receive(:complete).with(
-        messages: messages,
+        messages,
         model: "anthropic/claude-3.5-sonnet",
-        max_tokens: 2000,
-        temperature: 0.7
+        extras: {
+          max_tokens: 2000,
+          temperature: 0.7
+        }
       )
 
       client.chat_completion(messages: messages)
@@ -50,6 +52,7 @@ RSpec.describe OpenrouterClient do
 
     it "allows custom model" do
       expect_any_instance_of(OpenRouter::Client).to receive(:complete).with(
+        messages,
         hash_including(model: "openai/gpt-4")
       )
 
@@ -58,7 +61,8 @@ RSpec.describe OpenrouterClient do
 
     it "allows custom max_tokens" do
       expect_any_instance_of(OpenRouter::Client).to receive(:complete).with(
-        hash_including(max_tokens: 1000)
+        messages,
+        hash_including(extras: hash_including(max_tokens: 1000))
       )
 
       client.chat_completion(messages: messages, max_tokens: 1000)
@@ -66,7 +70,8 @@ RSpec.describe OpenrouterClient do
 
     it "allows custom temperature" do
       expect_any_instance_of(OpenRouter::Client).to receive(:complete).with(
-        hash_including(temperature: 0.5)
+        messages,
+        hash_including(extras: hash_including(temperature: 0.5))
       )
 
       client.chat_completion(messages: messages, temperature: 0.5)
