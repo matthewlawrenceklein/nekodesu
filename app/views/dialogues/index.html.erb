@@ -42,8 +42,11 @@
       <% end %>
     </div>
 
-    <div class="mt-8 text-center">
-      <a href="/good_job" class="text-blue-600 hover:text-blue-800 text-sm">View Background Jobs →</a>
+    <div class="mt-8 text-center space-y-4">
+      <%= link_to "Generate More Dialogues", new_dialogue_path, class: "inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200" %>
+      <div>
+        <a href="/good_job" class="text-blue-600 hover:text-blue-800 text-sm">View Background Jobs →</a>
+      </div>
     </div>
   </div>
 </div>

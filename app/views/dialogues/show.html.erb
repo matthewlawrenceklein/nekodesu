@@ -22,12 +22,12 @@
       <div class="bg-white rounded-lg shadow-lg p-8">
         <div class="mb-6">
           <div class="flex justify-between items-center mb-4">
-            <span class="text-sm text-gray-500">Question <%= @current_question_index %> of <%= @dialogue.comprehension_questions.count %></span>
+            <span class="text-sm text-gray-500">Question <%= @current_question_index %> of <%= @attempt.total_questions %></span>
             <span class="text-sm font-semibold text-blue-600"><%= @attempt.correct_count %> / <%= @current_question_index - 1 %> correct</span>
           </div>
 
           <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: <%= (@current_question_index.to_f / @dialogue.comprehension_questions.count * 100).round %>%"></div>
+            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: <%= (@current_question_index.to_f / @attempt.total_questions * 100).round %>%"></div>
           </div>
         </div>
 

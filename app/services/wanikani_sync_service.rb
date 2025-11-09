@@ -7,9 +7,22 @@ class WanikaniSyncService
   end
 
   def sync_all
+    sync_user_info
     sync_subjects
     sync_study_materials
     user.update!(last_wanikani_sync: Time.current)
+  end
+
+  def sync_user_info
+    Rails.logger.info("Syncing user info for user #{user.id}")
+    
+    user_data = client.get_user
+    user_level = user_data.dig("data", "level")
+    
+    if user_level
+      user.update!(level: user_level)
+      Rails.logger.info("Updated user level to #{user_level}")
+    end
   end
 
   def sync_study_materials
@@ -28,10 +41,12 @@ class WanikaniSyncService
   end
 
   def sync_subjects
-    Rails.logger.info("Syncing subjects for user #{user.id}")
+    Rails.logger.info("Syncing subjects for user #{user.id} at or below level #{user.level}")
 
     params = {}
     params[:updated_after] = user.last_wanikani_sync.iso8601 if user.last_wanikani_sync
+    # Only fetch subjects at or below user's current level
+    params[:levels] = (1..user.level).to_a.join(',')
 
     all_subjects = fetch_all_pages(:get_subjects, params)
 
@@ -39,7 +54,7 @@ class WanikaniSyncService
       sync_subject(subject_data)
     end
 
-    Rails.logger.info("Synced #{all_subjects.count} subjects")
+    Rails.logger.info("Synced #{all_subjects.count} subjects at or below level #{user.level}")
   end
 
   private

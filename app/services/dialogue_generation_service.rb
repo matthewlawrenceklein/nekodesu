@@ -72,8 +72,9 @@ class DialogueGenerationService
          - Beginner (N5): Simple present/past tense, basic particles (は、が、を、に、で), polite form (です/ます)
          - Intermediate (N4-N3): More complex particles, て-form, conditionals, casual and polite forms
          - Advanced (N2-N1): Complex grammar, honorifics/humble forms, nuanced expressions, literary style
-      4. Include 2-3 comprehension questions with 4 multiple choice options each
-      5. Provide English translations
+      4. Include EXACTLY 10 comprehension questions with 4 multiple choice options each
+      5. Questions should test different aspects: vocabulary, grammar, context, inference
+      6. Provide English translations
 
       Format your response as JSON with this structure:
       {
@@ -109,7 +110,7 @@ class DialogueGenerationService
 
       Please create a natural Japanese dialogue using ONLY these kanji and vocabulary words.
       Use grammar and formality appropriate for #{jlpt_level} level.
-      Include 2-3 comprehension questions to test understanding.
+      Include EXACTLY 10 comprehension questions to test understanding of vocabulary, grammar, context, and inference.
     PROMPT
   end
 

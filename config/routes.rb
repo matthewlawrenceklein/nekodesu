@@ -12,7 +12,10 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "dialogues#index"
 
-  resources :dialogues, only: [ :index, :show ] do
+  resources :dialogues, only: [ :index, :show, :new ] do
+    collection do
+      post :generate
+    end
     member do
       post :start
       post :ready

@@ -27,6 +27,21 @@
   </head>
 
   <body>
+    <% if notice || alert %>
+      <div class="fixed top-4 right-4 z-50 max-w-md">
+        <% if notice %>
+          <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-lg mb-4">
+            <%= notice %>
+          </div>
+        <% end %>
+        <% if alert %>
+          <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg">
+            <%= alert %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
     <%= yield %>
   </body>
 </html>

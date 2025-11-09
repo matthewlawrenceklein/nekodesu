@@ -9,8 +9,15 @@ class DialoguesController < ApplicationController
   end
 
   def show
-    @attempt = @user.dialogue_attempts.find_or_create_by(dialogue: @dialogue) do |attempt|
-      attempt.total_questions = @dialogue.comprehension_questions.count
+    # Find the most recent in-progress attempt
+    @attempt = @user.dialogue_attempts.in_progress.where(dialogue: @dialogue).order(created_at: :desc).first
+
+    # If no in-progress attempt, create one and redirect
+    unless @attempt
+      @attempt = @user.dialogue_attempts.create!(
+        dialogue: @dialogue,
+        total_questions: DialogueAttempt::QUESTIONS_PER_ATTEMPT
+      )
     end
 
     # If no answers yet, show dialogue. Otherwise show next question.
@@ -21,7 +28,7 @@ class DialoguesController < ApplicationController
       @showing_dialogue = true
     else
       @current_question_index = actual_answers.keys.length + 1
-      @current_question = @dialogue.comprehension_questions.order(:id)[@current_question_index - 1]
+      @current_question = @attempt.selected_questions[@current_question_index - 1]
 
       # If all questions answered, redirect to results
       if @current_question.nil?
@@ -31,17 +38,20 @@ class DialoguesController < ApplicationController
   end
 
   def start
-    @attempt = @user.dialogue_attempts.find_or_create_by(dialogue: @dialogue) do |attempt|
-      attempt.total_questions = @dialogue.comprehension_questions.count
-    end
+    # Always create a new attempt for fresh random questions
+    @attempt = @user.dialogue_attempts.create!(
+      dialogue: @dialogue,
+      total_questions: DialogueAttempt::QUESTIONS_PER_ATTEMPT
+    )
 
     redirect_to dialogue_path(@dialogue)
   end
 
   def ready
-    @attempt = @user.dialogue_attempts.find_or_create_by!(dialogue: @dialogue) do |attempt|
-      attempt.total_questions = @dialogue.comprehension_questions.count
-    end
+    @attempt = @user.dialogue_attempts.in_progress.where(dialogue: @dialogue).order(created_at: :desc).first!
+
+    # Select random questions if not already selected
+    @attempt.select_random_questions! if @attempt.selected_question_ids.empty?
 
     # Mark that user has read the dialogue by adding a placeholder
     @attempt.update!(answers: { "ready" => true })
@@ -50,7 +60,7 @@ class DialoguesController < ApplicationController
   end
 
   def answer
-    @attempt = @user.dialogue_attempts.find_by!(dialogue: @dialogue)
+    @attempt = @user.dialogue_attempts.in_progress.where(dialogue: @dialogue).order(created_at: :desc).first!
     question = @dialogue.comprehension_questions.find(params[:question_id])
 
     selected_index = params[:selected_index].to_i
@@ -82,6 +92,22 @@ class DialoguesController < ApplicationController
 
   def results
     @attempt = @user.dialogue_attempts.find_by!(dialogue: @dialogue, completed_at: ...Time.current)
+  end
+
+  def new
+    # Show generation form
+  end
+
+  def generate
+    count = params[:count].to_i.clamp(1, 20)
+    difficulty = params[:difficulty_level] || "beginner"
+
+    begin
+      GenerateDialoguesJob.perform_now(@user.id, count: count, difficulty_level: difficulty)
+      redirect_to root_path, notice: "Successfully generated #{count} #{difficulty} dialogue(s)!"
+    rescue => e
+      redirect_to new_dialogue_path, alert: "Error generating dialogues: #{e.message}"
+    end
   end
 
   private

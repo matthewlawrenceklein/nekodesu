@@ -112,13 +112,34 @@ RSpec.describe WanikaniSyncService do
     end
   end
 
+  describe "#sync_user_info" do
+    let(:user_response) do
+      {
+        "data" => {
+          "level" => 5,
+          "username" => "testuser"
+        }
+      }
+    end
+
+    it "fetches and updates user level" do
+      allow(client).to receive(:get_user).and_return(user_response)
+
+      expect {
+        service.sync_user_info
+      }.to change { user.reload.level }.to(5)
+    end
+  end
+
   describe "#sync_all" do
     before do
+      allow(service).to receive(:sync_user_info)
       allow(service).to receive(:sync_subjects)
       allow(service).to receive(:sync_study_materials)
     end
 
-    it "syncs subjects and study materials" do
+    it "syncs user info, subjects and study materials" do
+      expect(service).to receive(:sync_user_info)
       expect(service).to receive(:sync_subjects)
       expect(service).to receive(:sync_study_materials)
 
