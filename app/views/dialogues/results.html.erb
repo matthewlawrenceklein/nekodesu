@@ -2,9 +2,9 @@
   <div class="max-w-4xl mx-auto">
     <%# Score Summary %>
     <div class="bg-white rounded-lg shadow-lg p-8 mb-8 text-center">
-      <h1 class="text-3xl font-bold text-gray-900 mb-4">Comprehension Complete!</h1>
+      <h1 class="text-3xl font-bold text-gray-900 mb-6">Finished!</h1>
 
-      <div class="inline-block">
+      <div class="inline-block mb-6">
         <div class="text-6xl font-bold mb-2 <%= @attempt.score_percentage >= 70 ? 'text-green-600' : 'text-orange-600' %>">
           <%= @attempt.score_percentage %>%
         </div>
@@ -14,12 +14,18 @@
       </div>
 
       <% if @attempt.score_percentage >= 90 %>
-        <p class="mt-4 text-lg text-green-700">🎉 Excellent work!</p>
+        <p class="mb-6 text-lg text-green-700">🎉 Excellent work!</p>
       <% elsif @attempt.score_percentage >= 70 %>
-        <p class="mt-4 text-lg text-blue-700">👍 Good job!</p>
+        <p class="mb-6 text-lg text-blue-700">👍 Good job!</p>
       <% else %>
-        <p class="mt-4 text-lg text-orange-700">Keep practicing!</p>
+        <p class="mb-6 text-lg text-orange-700">Keep practicing!</p>
       <% end %>
+
+      <%# Action Buttons %>
+      <div class="flex justify-center gap-4">
+        <%= button_to "Try Again (New Questions)", start_dialogue_path(@dialogue), method: :post, class: "bg-green-600 hover:bg-green-700 text-white font-bold text-lg py-4 px-8 rounded-lg transition duration-200" %>
+        <%= link_to "Return to Dashboard", root_path, class: "bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-4 px-8 rounded-lg transition duration-200 inline-block" %>
+      </div>
     </div>
 
     <%# Dialogue Review %>
@@ -93,11 +99,6 @@
       </div>
     </div>
 
-    <%# Actions %>
-    <div class="text-center space-x-4">
-      <%= button_to "Try Again (New Questions)", start_dialogue_path(@dialogue), method: :post, class: "inline-block bg-green-600 hover:bg-green-700 text-white font-bold text-lg py-4 px-8 rounded-lg transition duration-200" %>
-      <%= link_to "Return to Dashboard", root_path, class: "inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-4 px-8 rounded-lg transition duration-200" %>
-    </div>
   </div>
 </div>
 

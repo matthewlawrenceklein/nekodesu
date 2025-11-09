@@ -82,7 +82,7 @@ class DialoguesController < ApplicationController
 
     # Check if all questions answered (excluding "ready" placeholder)
     actual_answers = answers.reject { |k, v| k == "ready" }
-    if actual_answers.keys.length >= @dialogue.comprehension_questions.count
+    if actual_answers.keys.length >= @attempt.total_questions
       @attempt.mark_completed!
       redirect_to results_dialogue_path(@dialogue)
     else
@@ -91,7 +91,7 @@ class DialoguesController < ApplicationController
   end
 
   def results
-    @attempt = @user.dialogue_attempts.find_by!(dialogue: @dialogue, completed_at: ...Time.current)
+    @attempt = @user.dialogue_attempts.completed.where(dialogue: @dialogue).order(created_at: :desc).first!
   end
 
   def new
