@@ -1,8 +1,8 @@
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4">
   <div class="max-w-4xl mx-auto">
     <% if @showing_dialogue %>
       <%# Show dialogue text first %>
-      <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-6">
         <div class="text-center mb-6">
           <span class="inline-block bg-blue-100 text-blue-800 text-sm font-semibold px-4 py-1 rounded-full">
             <%= @dialogue.difficulty_level.titleize %> (Levels <%= @dialogue.level_range %>)
@@ -10,19 +10,19 @@
         </div>
 
         <div class="prose prose-lg max-w-none mb-8">
-          <div class="text-2xl leading-relaxed text-gray-900 mb-6 font-japanese">
+          <div class="text-2xl leading-relaxed text-gray-900 dark:text-gray-100 mb-6 font-japanese">
             <%= simple_format(@dialogue.japanese_text) %>
           </div>
         </div>
 
-        <%= button_to "Ready?", ready_dialogue_path(@dialogue), method: :post, class: "w-full bg-green-600 hover:bg-green-700 text-white font-bold text-lg py-4 rounded-lg transition duration-200" %>
+        <%= button_to "Ready?", ready_dialogue_path(@dialogue), method: :post, class: "w-full bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-bold text-lg py-4 rounded-lg transition duration-200" %>
       </div>
     <% else %>
       <%# Show comprehension question %>
-      <div class="bg-white rounded-lg shadow-lg p-8">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
         <div class="mb-6">
           <div class="flex justify-between items-center mb-4">
-            <span class="text-sm text-gray-500">Question <%= @current_question_index %> of <%= @attempt.total_questions %></span>
+            <span class="text-sm text-gray-500 dark:text-gray-400">Question <%= @current_question_index %> of <%= @attempt.total_questions %></span>
             <span class="text-sm font-semibold text-blue-600"><%= @attempt.correct_count %> / <%= @current_question_index - 1 %> correct</span>
           </div>
 
@@ -31,15 +31,15 @@
           </div>
         </div>
 
-        <h2 class="text-2xl font-semibold text-gray-900 mb-6"><%= @current_question.question_text %></h2>
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6"><%= @current_question.question_text %></h2>
 
         <div class="space-y-3">
           <% @current_question.options.each_with_index do |option, index| %>
-            <%= button_to answer_dialogue_path(@dialogue, question_id: @current_question.id, selected_index: index), method: :post, class: "w-full text-left p-4 rounded-lg border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition duration-200 flex items-center group" do %>
-              <span class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 group-hover:bg-blue-500 group-hover:text-white flex items-center justify-center font-semibold mr-4">
+            <%= button_to answer_dialogue_path(@dialogue, question_id: @current_question.id, selected_index: index), method: :post, class: "w-full text-left p-4 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 transition duration-200 flex items-center group" do %>
+              <span class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 group-hover:bg-blue-500 dark:group-hover:bg-blue-400 group-hover:text-white flex items-center justify-center font-semibold mr-4">
                 <%= ('A'.ord + index).chr %>
               </span>
-              <span class="text-gray-800 group-hover:text-gray-900"><%= option %></span>
+              <span class="text-gray-800 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white"><%= option %></span>
             <% end %>
           <% end %>
         </div>
@@ -47,7 +47,7 @@
     <% end %>
 
     <div class="mt-6 text-center">
-      <%= link_to "← Back to Dashboard", root_path, class: "text-blue-600 hover:text-blue-800" %>
+      <%= link_to "← Back to Dashboard", root_path, class: "text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" %>
     </div>
   </div>
 </div>
