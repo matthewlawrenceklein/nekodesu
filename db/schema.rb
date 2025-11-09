@@ -10,9 +10,38 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_06_030046) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_09_002253) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "comprehension_questions", force: :cascade do |t|
+    t.integer "correct_option_index", null: false
+    t.datetime "created_at", null: false
+    t.bigint "dialogue_id", null: false
+    t.text "explanation"
+    t.jsonb "options", default: [], null: false
+    t.text "question_text", null: false
+    t.datetime "updated_at", null: false
+    t.index ["dialogue_id"], name: "index_comprehension_questions_on_dialogue_id"
+  end
+
+  create_table "dialogues", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "difficulty_level", null: false
+    t.text "english_translation", null: false
+    t.integer "generation_time_ms"
+    t.text "japanese_text", null: false
+    t.jsonb "kanji_used", default: []
+    t.integer "max_level"
+    t.integer "min_level"
+    t.string "model_used"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.jsonb "vocabulary_used", default: []
+    t.index ["created_at"], name: "index_dialogues_on_created_at"
+    t.index ["difficulty_level"], name: "index_dialogues_on_difficulty_level"
+    t.index ["user_id"], name: "index_dialogues_on_user_id"
+  end
 
   create_table "good_job_batches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "callback_priority"
@@ -109,6 +138,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_06_030046) do
     t.datetime "created_at", null: false
     t.string "email", null: false
     t.datetime "last_wanikani_sync"
+    t.string "openrouter_api_key"
     t.datetime "updated_at", null: false
     t.string "wanikani_api_key"
     t.index ["email"], name: "index_users_on_email", unique: true
@@ -158,6 +188,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_06_030046) do
     t.index ["user_id"], name: "index_wani_subjects_on_user_id"
   end
 
+  add_foreign_key "comprehension_questions", "dialogues"
+  add_foreign_key "dialogues", "users"
   add_foreign_key "wani_study_materials", "users"
   add_foreign_key "wani_study_materials", "wani_subjects"
   add_foreign_key "wani_subjects", "users"
