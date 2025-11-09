@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_09_002253) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_09_005030) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,6 +23,21 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_09_002253) do
     t.text "question_text", null: false
     t.datetime "updated_at", null: false
     t.index ["dialogue_id"], name: "index_comprehension_questions_on_dialogue_id"
+  end
+
+  create_table "dialogue_attempts", force: :cascade do |t|
+    t.jsonb "answers", default: {}, null: false
+    t.datetime "completed_at"
+    t.integer "correct_count", default: 0
+    t.datetime "created_at", null: false
+    t.bigint "dialogue_id", null: false
+    t.integer "total_questions", default: 0
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["completed_at"], name: "index_dialogue_attempts_on_completed_at"
+    t.index ["dialogue_id"], name: "index_dialogue_attempts_on_dialogue_id"
+    t.index ["user_id", "dialogue_id"], name: "index_dialogue_attempts_on_user_id_and_dialogue_id"
+    t.index ["user_id"], name: "index_dialogue_attempts_on_user_id"
   end
 
   create_table "dialogues", force: :cascade do |t|
@@ -189,6 +204,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_09_002253) do
   end
 
   add_foreign_key "comprehension_questions", "dialogues"
+  add_foreign_key "dialogue_attempts", "dialogues"
+  add_foreign_key "dialogue_attempts", "users"
   add_foreign_key "dialogues", "users"
   add_foreign_key "wani_study_materials", "users"
   add_foreign_key "wani_study_materials", "wani_subjects"

@@ -3,6 +3,7 @@ class Dialogue < ApplicationRecord
 
   belongs_to :user
   has_many :comprehension_questions, dependent: :destroy
+  has_many :dialogue_attempts, dependent: :destroy
 
   validates :japanese_text, presence: true
   validates :english_translation, presence: true
