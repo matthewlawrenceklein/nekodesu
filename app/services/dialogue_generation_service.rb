@@ -176,9 +176,60 @@ class DialogueGenerationService
     json_match = content.match(/```json\s*(\{.*?\})\s*```/m) || content.match(/(\{.*\})/m)
     json_string = json_match ? json_match[1] : content
 
-    JSON.parse(json_string)
+    # Sanitize the JSON string by escaping unescaped newlines within string values
+    # This handles cases where the AI returns literal newlines in dialogue text
+    sanitized = sanitize_json_string(json_string)
+
+    JSON.parse(sanitized)
   rescue JSON::ParserError => e
-    raise GenerationError, "Failed to parse AI response as JSON: #{e.message}"
+    raise GenerationError, "Failed to parse AI response as JSON: #{e.message}\n#{json_string.truncate(500)}"
+  end
+
+  def sanitize_json_string(json_str)
+    # Replace literal newlines within string values with \n
+    # This is a simple approach that handles most cases
+    in_string = false
+    escape_next = false
+    result = []
+
+    json_str.each_char do |char|
+      if escape_next
+        result << char
+        escape_next = false
+        next
+      end
+
+      case char
+      when "\\"
+        escape_next = true
+        result << char
+      when '"'
+        in_string = !in_string
+        result << char
+      when "\n"
+        if in_string
+          result << "\\n"
+        else
+          result << char
+        end
+      when "\r"
+        if in_string
+          result << "\\r"
+        else
+          result << char
+        end
+      when "\t"
+        if in_string
+          result << "\\t"
+        else
+          result << char
+        end
+      else
+        result << char
+      end
+    end
+
+    result.join
   end
 
   def create_questions(dialogue, questions_data)

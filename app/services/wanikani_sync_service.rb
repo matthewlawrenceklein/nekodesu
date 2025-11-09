@@ -15,10 +15,10 @@ class WanikaniSyncService
 
   def sync_user_info
     Rails.logger.info("Syncing user info for user #{user.id}")
-    
+
     user_data = client.get_user
     user_level = user_data.dig("data", "level")
-    
+
     if user_level
       user.update!(level: user_level)
       Rails.logger.info("Updated user level to #{user_level}")
@@ -46,7 +46,7 @@ class WanikaniSyncService
     params = {}
     params[:updated_after] = user.last_wanikani_sync.iso8601 if user.last_wanikani_sync
     # Only fetch subjects at or below user's current level
-    params[:levels] = (1..user.level).to_a.join(',')
+    params[:levels] = (1..user.level).to_a.join(",")
 
     all_subjects = fetch_all_pages(:get_subjects, params)
 

@@ -1,6 +1,6 @@
 namespace :wanikani do
   desc "Clear all subjects and resync based on user level"
-  task :reset_and_resync, [:user_id] => :environment do |t, args|
+  task :reset_and_resync, [ :user_id ] => :environment do |t, args|
     user_id = args[:user_id] || User.first&.id
 
     unless user_id
