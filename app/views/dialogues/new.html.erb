@@ -4,9 +4,18 @@
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Generate New Dialogues</h1>
 
       <p class="text-gray-600 dark:text-gray-300 mb-8">
-        Create personalized Japanese dialogues based on your WaniKani vocabulary.
+        Create personalized Japanese dialogues using vocabulary from your <strong>WaniKani</strong> and <strong>Renshuu</strong> study materials.
         Each dialogue includes 10 comprehension questions (4 random questions will be shown per attempt).
       </p>
+
+      <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 rounded mb-6">
+        <p class="text-sm text-blue-800 dark:text-blue-200">
+          <strong>📚 Vocabulary Sources:</strong><br>
+          • WaniKani: Kanji and vocabulary from selected difficulty level<br>
+          • Renshuu: Your studied vocabulary, kanji, and grammar points<br>
+          • Each dialogue uses a random selection from both sources for variety
+        </p>
+      </div>
 
       <%= form_with url: generate_dialogues_path, method: :post, class: "space-y-6" do |f| %>
         <div>

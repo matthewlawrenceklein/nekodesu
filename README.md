@@ -1,12 +1,16 @@
 # 猫です (Nekodesu) - Japanese Reading Comprehension Practice
 
-A Rails application that generates personalized Japanese dialogues based on your WaniKani vocabulary level. Practice reading comprehension with AI-generated content tailored to your current knowledge.
+A Rails application that generates personalized Japanese dialogues based on your WaniKani and Renshuu vocabulary. Practice reading comprehension with AI-generated content tailored to your current knowledge from both study platforms.
 
 ## Features
 
 ### 🎯 Core Features
-- **WaniKani Integration**: Automatically syncs your vocabulary and kanji at or below your current level
+- **Dual Vocabulary Sources**: 
+  - **WaniKani Integration**: Syncs vocabulary and kanji at or below your current level
+  - **Renshuu Integration**: Syncs your studied vocabulary, kanji, grammar points, and sentences
+  - **Smart Combination**: Creates non-redundant superset from both sources
 - **AI-Powered Dialogues**: Generates natural Japanese conversations using OpenRouter AI (Claude 3.5 Sonnet)
+- **Random Vocabulary Sampling**: Each dialogue uses a different random selection from your combined vocabulary pool
 - **Smart Question System**: 10 comprehension questions per dialogue, 4 randomly selected per attempt
 - **Progress Tracking**: Track your scores, completion rate, and improvement over time
 - **Retry System**: Practice the same dialogue multiple times with different random questions
@@ -18,8 +22,9 @@ A Rails application that generates personalized Japanese dialogues based on your
 - **Difficulty Levels**: Beginner (N5), Intermediate (N4-N3), Advanced (N2-N1)
 
 ### ⚙️ Technical Features
-- **Background Jobs**: Scheduled syncs and async dialogue generation with GoodJob
-- **Level-Based Content**: Only uses vocabulary and kanji you've learned
+- **Background Jobs**: Scheduled syncs (every 6 hours, offset) for both WaniKani and Renshuu
+- **Level-Based Content**: WaniKani vocabulary filtered by level, Renshuu uses all studied items
+- **Smart Sampling**: Randomly selects up to 200 kanji + 300 vocabulary per dialogue from combined pool
 - **Grammar Matching**: Dialogue complexity matches JLPT level expectations
 - **Robust Parsing**: Handles AI response variations and formatting issues
 
@@ -37,7 +42,8 @@ A Rails application that generates personalized Japanese dialogues based on your
 
 - Docker and Docker Compose
 - API Keys:
-  - [WaniKani API Key](https://www.wanikani.com/settings/personal_access_tokens) - Required for vocabulary sync
+  - [WaniKani API Key](https://www.wanikani.com/settings/personal_access_tokens) - Required for WaniKani vocabulary sync
+  - [Renshuu API Key](https://www.renshuu.org/index.php?page=profile/api) - Required for Renshuu vocabulary sync
   - [OpenRouter API Key](https://openrouter.ai/keys) - Required for AI dialogue generation
 
 ## Getting Started
@@ -50,6 +56,7 @@ cp env.example .env
 
 # Edit .env and add your API keys
 # WANIKANI_API_KEY=your_wanikani_key_here
+# RENSHUU_API_KEY=your_renshuu_key_here
 # OPENROUTER_API_KEY=your_openrouter_key_here
 ```
 
@@ -71,17 +78,21 @@ docker compose exec web rails db:create db:migrate
 
 # Create a user (in Rails console)
 docker compose exec web rails console
-# > User.create!(email: "your@email.com", wanikani_api_key: ENV['WANIKANI_API_KEY'], openrouter_api_key: ENV['OPENROUTER_API_KEY'])
+# > User.create!(email: "your@email.com", wanikani_api_key: ENV['WANIKANI_API_KEY'], renshuu_api_key: ENV['RENSHUU_API_KEY'], openrouter_api_key: ENV['OPENROUTER_API_KEY'])
 ```
 
-### 4. Sync WaniKani Data
+### 4. Sync Vocabulary Data
 
 ```bash
-# Sync your vocabulary and kanji (this will take a few minutes)
+# Sync WaniKani vocabulary and kanji (this will take a few minutes)
 docker compose exec web rails "wanikani:sync[1]"  # Replace 1 with your user ID
+
+# Sync Renshuu vocabulary, kanji, and grammar
+docker compose exec web rails "renshuu:sync[1]"  # Replace 1 with your user ID
 
 # Or reset and resync if you need to
 docker compose exec web rails "wanikani:reset_and_resync[1]"
+docker compose exec web rails "renshuu:reset_and_resync[1]"
 ```
 
 ### 5. Generate Initial Dialogues
@@ -224,25 +235,31 @@ docker compose exec web bundle exec rspec
 docker compose exec web bundle exec rubocop -A
 ```
 
-**Current Test Stats:**
-- 94 examples, 0 failures
-- 65% code coverage
-- ~3 second test suite
 
 ## How It Works
 
-### 1. WaniKani Sync
+### 1. Vocabulary Sync
+**WaniKani:**
 - Fetches your current WaniKani level
 - Syncs only vocabulary and kanji at or below your level
-- Runs automatically every 6 hours
+- Runs automatically every 6 hours (at :00)
 - Stores subjects in local database for fast access
 
+**Renshuu:**
+- Fetches all your studied vocabulary, kanji, grammar, and sentences
+- No level filtering - uses everything you've studied
+- Runs automatically every 6 hours (at :03, offset from WaniKani)
+- Stores items in local database
+
 ### 2. Dialogue Generation
-- Analyzes your vocabulary by difficulty level (beginner: 1-10, intermediate: 11-30, advanced: 31-60)
-- Sends vocabulary list to OpenRouter AI (Claude 3.5 Sonnet)
-- AI generates natural Japanese dialogue using ONLY your known words
+- **Random Sampling**: Selects up to 150 kanji + 200 vocab from each source
+- **Combines & Deduplicates**: Creates non-redundant superset from both WaniKani and Renshuu
+- **Final Selection**: Randomly picks up to 200 kanji + 300 vocab for the AI prompt
+- **AI Generation**: Sends combined vocabulary to OpenRouter AI (Claude 3.5 Sonnet)
+- AI generates natural Japanese dialogue using ONLY the provided words
 - Creates 10 comprehension questions testing vocabulary, grammar, context, and inference
 - Stores dialogue and questions in database
+- **Each dialogue is unique** due to random vocabulary selection
 
 ### 3. Reading Practice
 - Dashboard shows random dialogue on each visit
@@ -259,12 +276,15 @@ docker compose exec web bundle exec rubocop -A
 
 ## Key Design Decisions
 
-- **Level-based sync**: Only syncs vocabulary you've learned to keep database lean
+- **Dual vocabulary sources**: Combines WaniKani (level-based) + Renshuu (all studied items) for maximum coverage
+- **Smart sampling**: Random selection from combined pool ensures variety while respecting token limits
+- **Non-redundant superset**: Deduplicates overlapping items between sources
 - **10 questions, 4 shown**: Allows multiple attempts on same dialogue with variety
 - **Random dialogue selection**: Ensures varied practice
 - **Dark mode**: Reduces eye strain during study sessions
 - **Synchronous generation**: User sees progress and errors immediately
 - **JSON sanitization**: Handles AI formatting variations gracefully
+- **Offset sync schedules**: WaniKani and Renshuu syncs run at different times to distribute load
 
 ## Deployment
 
@@ -274,7 +294,8 @@ This application is Docker-ready and can be deployed to any container platform. 
 - `RAILS_ENV=production`
 - `DATABASE_URL` - PostgreSQL connection string
 - `SECRET_KEY_BASE` - Rails secret
-- `WANIKANI_API_KEY` - For syncing (or per-user)
+- `WANIKANI_API_KEY` - For WaniKani syncing (or per-user)
+- `RENSHUU_API_KEY` - For Renshuu syncing (or per-user)
 - `OPENROUTER_API_KEY` - For AI generation (or per-user)
 
 ## License

@@ -32,11 +32,15 @@ RSpec.describe DialogueGenerationService do
     allow(OpenrouterClient).to receive(:new).and_return(openrouter_client)
     allow(openrouter_client).to receive(:chat_completion).and_return(mock_ai_response)
 
-    # Create some test vocabulary
+    # Create some test vocabulary from WaniKani
     create(:wani_subject, user: user, subject_type: "kanji", characters: "元", level: 2)
     create(:wani_subject, user: user, subject_type: "kanji", characters: "気", level: 3)
     create(:wani_subject, user: user, subject_type: "vocabulary", characters: "こんにちは", level: 1)
     create(:wani_subject, user: user, subject_type: "vocabulary", characters: "元気", level: 3)
+
+    # Create some test vocabulary from Renshuu
+    create(:renshuu_item, user: user, item_type: "kanji", term: "食")
+    create(:renshuu_item, user: user, item_type: "vocab", term: "食べる")
   end
 
   describe "#initialize" do
@@ -97,6 +101,23 @@ RSpec.describe DialogueGenerationService do
       )
 
       service.generate
+    end
+
+    it "combines WaniKani and Renshuu vocabulary" do
+      # Capture the prompt sent to OpenRouter
+      captured_prompt = nil
+      allow(openrouter_client).to receive(:chat_completion) do |args|
+        captured_prompt = args[:messages].last[:content]
+        mock_ai_response
+      end
+
+      service.generate
+
+      # Should include both WaniKani and Renshuu items
+      expect(captured_prompt).to include("元")  # WaniKani kanji
+      expect(captured_prompt).to include("食")  # Renshuu kanji
+      expect(captured_prompt).to include("こんにちは")  # WaniKani vocab
+      expect(captured_prompt).to include("食べる")  # Renshuu vocab
     end
 
     context "with different difficulty levels" do

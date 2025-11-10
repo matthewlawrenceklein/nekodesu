@@ -1,6 +1,14 @@
 class DialogueGenerationService
   class GenerationError < StandardError; end
 
+  # Vocabulary sampling limits to balance variety with token constraints
+  WANIKANI_KANJI_SAMPLE_SIZE = 150
+  WANIKANI_VOCAB_SAMPLE_SIZE = 200
+  RENSHUU_KANJI_SAMPLE_SIZE = 150
+  RENSHUU_VOCAB_SAMPLE_SIZE = 200
+  MAX_KANJI_FOR_PROMPT = 200
+  MAX_VOCAB_FOR_PROMPT = 300
+
   def initialize(user, difficulty_level: "beginner")
     @user = user
     @difficulty_level = difficulty_level
@@ -34,16 +42,60 @@ class DialogueGenerationService
 
   def build_vocabulary_data
     level_range = level_range_for_difficulty
-    subjects = @user.wani_subjects
-                    .visible
-                    .where(level: level_range)
-                    .order(:level)
+
+    # Get WaniKani vocabulary and kanji (random sample from level range)
+    wani_kanji = @user.wani_subjects
+                      .visible
+                      .kanji
+                      .where(level: level_range)
+                      .order("RANDOM()")
+                      .limit(WANIKANI_KANJI_SAMPLE_SIZE)
+                      .pluck(:characters)
+                      .compact
+
+    wani_vocab = @user.wani_subjects
+                      .visible
+                      .vocabulary
+                      .where(level: level_range)
+                      .order("RANDOM()")
+                      .limit(WANIKANI_VOCAB_SAMPLE_SIZE)
+                      .pluck(:characters)
+                      .compact
+
+    # Get Renshuu vocabulary and kanji (random sample)
+    renshuu_kanji = @user.renshuu_items
+                         .kanji
+                         .order("RANDOM()")
+                         .limit(RENSHUU_KANJI_SAMPLE_SIZE)
+                         .pluck(:term)
+                         .compact
+
+    renshuu_vocab = @user.renshuu_items
+                         .vocab
+                         .order("RANDOM()")
+                         .limit(RENSHUU_VOCAB_SAMPLE_SIZE)
+                         .pluck(:term)
+                         .compact
+
+    # Combine and deduplicate (union creates a non-redundant superset)
+    combined_kanji = (wani_kanji + renshuu_kanji).uniq
+    combined_vocab = (wani_vocab + renshuu_vocab).uniq
+
+    # Limit to reasonable totals for the AI (to avoid token limits)
+    # Randomly sample if we have too many
+    final_kanji = combined_kanji.sample([ combined_kanji.length, MAX_KANJI_FOR_PROMPT ].min)
+    final_vocab = combined_vocab.sample([ combined_vocab.length, MAX_VOCAB_FOR_PROMPT ].min)
 
     {
-      kanji: subjects.kanji.pluck(:characters).compact,
-      vocabulary: subjects.vocabulary.pluck(:characters).compact,
+      kanji: final_kanji,
+      vocabulary: final_vocab,
       min_level: level_range.min,
-      max_level: level_range.max
+      max_level: level_range.max,
+      sources: {
+        wanikani: { kanji: wani_kanji.count, vocab: wani_vocab.count },
+        renshuu: { kanji: renshuu_kanji.count, vocab: renshuu_vocab.count },
+        total: { kanji: final_kanji.count, vocab: final_vocab.count }
+      }
     }
   end
 
@@ -64,9 +116,10 @@ class DialogueGenerationService
     <<~PROMPT
       You are a Japanese language teacher creating reading comprehension exercises.
       Your task is to generate a natural Japanese dialogue using ONLY the vocabulary and kanji provided by the user.
+      The vocabulary comes from the user's WaniKani and Renshuu study materials.
 
       Requirements:
-      1. Use ONLY the kanji and vocabulary words provided
+      1. Use ONLY the kanji and vocabulary words provided (from both WaniKani and Renshuu)
       2. Create a natural, conversational dialogue
       3. Match the grammar complexity and formality to the difficulty level:
          - Beginner (N5): Simple present/past tense, basic particles (は、が、を、に、で), polite form (です/ます)
@@ -100,11 +153,11 @@ class DialogueGenerationService
       Difficulty Level: #{@difficulty_level} (#{jlpt_level})
       WaniKani Levels: #{vocabulary_data[:min_level]}-#{vocabulary_data[:max_level]}
 
-      Available Kanji (#{vocabulary_data[:kanji].length}):
-      #{vocabulary_data[:kanji].first(100).join(", ")}
+      Available Kanji (#{vocabulary_data[:kanji].length} randomly selected from WaniKani + Renshuu):
+      #{vocabulary_data[:kanji].join(", ")}
 
-      Available Vocabulary (#{vocabulary_data[:vocabulary].length}):
-      #{vocabulary_data[:vocabulary].first(100).join(", ")}
+      Available Vocabulary (#{vocabulary_data[:vocabulary].length} randomly selected from WaniKani + Renshuu):
+      #{vocabulary_data[:vocabulary].join(", ")}
 
       Grammar Guidelines: #{grammar_notes}
 
