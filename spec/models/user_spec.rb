@@ -3,7 +3,8 @@ require 'rails_helper'
 RSpec.describe User, type: :model do
   describe 'associations' do
     it { should have_many(:wani_subjects).dependent(:destroy) }
-    it { should have_many(:wani_study_materials).dependent(:destroy) }
+    it { should have_many(:dialogues).dependent(:destroy) }
+    it { should have_many(:dialogue_attempts).dependent(:destroy) }
   end
 
   describe 'validations' do

@@ -3,7 +3,6 @@ require 'rails_helper'
 RSpec.describe WaniSubject, type: :model do
   describe 'associations' do
     it { should belong_to(:user) }
-    it { should have_many(:wani_study_materials).dependent(:destroy) }
   end
 
   describe 'validations' do

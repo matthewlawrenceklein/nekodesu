@@ -10,10 +10,6 @@ namespace :wanikani do
 
     user = User.find(user_id)
 
-    puts "Clearing all study materials for user #{user_id}..."
-    deleted_materials = user.wani_study_materials.delete_all
-    puts "Deleted #{deleted_materials} study materials"
-
     puts "Clearing all subjects for user #{user_id}..."
     deleted_count = user.wani_subjects.delete_all
     puts "Deleted #{deleted_count} subjects"
@@ -31,6 +27,5 @@ namespace :wanikani do
     puts "  - Radicals: #{user.wani_subjects.where(subject_type: 'radical').count}"
     puts "  - Kanji: #{user.wani_subjects.where(subject_type: 'kanji').count}"
     puts "  - Vocabulary: #{user.wani_subjects.where(subject_type: 'vocabulary').count}"
-    puts "Study materials: #{user.wani_study_materials.count}"
   end
 end

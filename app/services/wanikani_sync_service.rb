@@ -9,7 +9,6 @@ class WanikaniSyncService
   def sync_all
     sync_user_info
     sync_subjects
-    sync_study_materials
     user.update!(last_wanikani_sync: Time.current)
   end
 
@@ -23,21 +22,6 @@ class WanikaniSyncService
       user.update!(level: user_level)
       Rails.logger.info("Updated user level to #{user_level}")
     end
-  end
-
-  def sync_study_materials
-    Rails.logger.info("Syncing study materials for user #{user.id}")
-
-    params = {}
-    params[:updated_after] = user.last_wanikani_sync.iso8601 if user.last_wanikani_sync
-
-    all_materials = fetch_all_pages(:get_study_materials, params)
-
-    all_materials.each do |material_data|
-      sync_study_material(material_data)
-    end
-
-    Rails.logger.info("Synced #{all_materials.count} study materials")
   end
 
   def sync_subjects
@@ -96,27 +80,6 @@ class WanikaniSyncService
     end
 
     response.body
-  end
-
-  def sync_study_material(material_data)
-    data = material_data["data"]
-
-    wani_subject = user.wani_subjects.find_by(external_id: data["subject_id"])
-    return unless wani_subject
-
-    user.wani_study_materials.find_or_initialize_by(
-      external_id: material_data["id"]
-    ).tap do |material|
-      material.wani_subject = wani_subject
-      material.subject_id = data["subject_id"]
-      material.subject_type = data["subject_type"]
-      material.meaning_note = data["meaning_note"]
-      material.reading_note = data["reading_note"]
-      material.meaning_synonyms = data["meaning_synonyms"] || []
-      material.hidden = data["hidden"] || false
-      material.created_at_wanikani = data["created_at"]
-      material.save!
-    end
   end
 
   def sync_subject(subject_data)

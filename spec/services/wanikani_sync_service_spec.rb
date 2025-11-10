@@ -67,51 +67,6 @@ RSpec.describe WanikaniSyncService do
     end
   end
 
-  describe "#sync_study_materials" do
-    let!(:wani_subject) { create(:wani_subject, user: user, external_id: 1) }
-    let(:material_response) do
-      {
-        "data" => [
-          {
-            "id" => 100,
-            "data" => {
-              "subject_id" => 1,
-              "subject_type" => "kanji",
-              "meaning_note" => "Test note",
-              "reading_note" => "Test reading note",
-              "meaning_synonyms" => [ "test" ],
-              "hidden" => false,
-              "created_at" => "2017-09-30T01:42:13.453291Z"
-            }
-          }
-        ],
-        "pages" => { "next_url" => nil }
-      }
-    end
-
-    it "fetches and syncs study materials from WaniKani" do
-      allow(client).to receive(:get_study_materials).and_return(material_response)
-
-      expect {
-        service.sync_study_materials
-      }.to change { user.wani_study_materials.count }.by(1)
-
-      material = user.wani_study_materials.last
-      expect(material.external_id).to eq(100)
-      expect(material.meaning_note).to eq("Test note")
-      expect(material.meaning_synonyms).to eq([ "test" ])
-    end
-
-    it "skips study materials without matching subject" do
-      material_response["data"][0]["data"]["subject_id"] = 999
-      allow(client).to receive(:get_study_materials).and_return(material_response)
-
-      expect {
-        service.sync_study_materials
-      }.not_to change { user.wani_study_materials.count }
-    end
-  end
-
   describe "#sync_user_info" do
     let(:user_response) do
       {
@@ -135,13 +90,11 @@ RSpec.describe WanikaniSyncService do
     before do
       allow(service).to receive(:sync_user_info)
       allow(service).to receive(:sync_subjects)
-      allow(service).to receive(:sync_study_materials)
     end
 
-    it "syncs user info, subjects and study materials" do
+    it "syncs user info and subjects" do
       expect(service).to receive(:sync_user_info)
       expect(service).to receive(:sync_subjects)
-      expect(service).to receive(:sync_study_materials)
 
       service.sync_all
     end

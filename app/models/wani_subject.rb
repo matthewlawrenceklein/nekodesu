@@ -1,6 +1,5 @@
 class WaniSubject < ApplicationRecord
   belongs_to :user
-  has_many :wani_study_materials, dependent: :destroy
 
   SUBJECT_TYPES = %w[radical kanji vocabulary kana_vocabulary].freeze
 

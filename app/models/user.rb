@@ -1,6 +1,5 @@
 class User < ApplicationRecord
   has_many :wani_subjects, dependent: :destroy
-  has_many :wani_study_materials, dependent: :destroy
   has_many :dialogues, dependent: :destroy
   has_many :dialogue_attempts, dependent: :destroy
 

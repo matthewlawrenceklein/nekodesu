@@ -19,10 +19,6 @@ class WanikaniClient
     end
   end
 
-  def get_study_materials(params = {})
-    get("study_materials", params)
-  end
-
   def get_subjects(params = {})
     get("subjects", params)
   end

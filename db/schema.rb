@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_09_012833) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_10_015148) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -161,25 +161,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_09_012833) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
-  create_table "wani_study_materials", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "created_at_wanikani"
-    t.integer "external_id", null: false
-    t.boolean "hidden", default: false
-    t.text "meaning_note"
-    t.jsonb "meaning_synonyms", default: []
-    t.text "reading_note"
-    t.integer "subject_id", null: false
-    t.string "subject_type", null: false
-    t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
-    t.bigint "wani_subject_id", null: false
-    t.index ["subject_id"], name: "index_wani_study_materials_on_subject_id"
-    t.index ["user_id", "external_id"], name: "index_wani_study_materials_on_user_id_and_external_id", unique: true
-    t.index ["user_id"], name: "index_wani_study_materials_on_user_id"
-    t.index ["wani_subject_id"], name: "index_wani_study_materials_on_wani_subject_id"
-  end
-
   create_table "wani_subjects", force: :cascade do |t|
     t.jsonb "auxiliary_meanings", default: []
     t.string "characters"
@@ -209,7 +190,5 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_09_012833) do
   add_foreign_key "dialogue_attempts", "dialogues"
   add_foreign_key "dialogue_attempts", "users"
   add_foreign_key "dialogues", "users"
-  add_foreign_key "wani_study_materials", "users"
-  add_foreign_key "wani_study_materials", "wani_subjects"
   add_foreign_key "wani_subjects", "users"
 end

@@ -14,16 +14,6 @@ RSpec.describe WanikaniClient do
     end
   end
 
-  describe '#get_study_materials' do
-    it 'fetches study materials', :vcr do
-      result = client.get_study_materials
-
-      expect(result).to be_a(Hash)
-      expect(result['object']).to eq('collection')
-      expect(result['data']).to be_an(Array)
-    end
-  end
-
   describe '#get_subjects' do
     it 'fetches subjects', :vcr do
       result = client.get_subjects(levels: '1')
