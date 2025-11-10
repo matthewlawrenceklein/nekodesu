@@ -14,6 +14,12 @@ Rails.application.configure do
       cron: "0 */6 * * *", # Every 6 hours at minute 0
       class: "WanikaniSyncAllUsersJob",
       description: "Sync WaniKani data for all configured users"
+    },
+    # Sync Renshuu data for all users every 6 hours (offset by 3 hours)
+    renshuu_sync: {
+      cron: "0 3-21/6 * * *", # Every 6 hours at minute 0, starting at 3am
+      class: "RenshuuSyncAllUsersJob",
+      description: "Sync Renshuu data for all configured users"
     }
   }
 

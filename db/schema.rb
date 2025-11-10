@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_10_015148) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_10_022839) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -150,12 +150,32 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_10_015148) do
     t.index ["scheduled_at"], name: "index_good_jobs_on_scheduled_at", where: "(finished_at IS NULL)"
   end
 
+  create_table "renshuu_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "example_sentences"
+    t.integer "external_id"
+    t.string "grammar_point"
+    t.string "item_type"
+    t.integer "mastery_level"
+    t.jsonb "meanings"
+    t.string "reading"
+    t.bigint "renshuu_schedule_id"
+    t.jsonb "tags"
+    t.string "term"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["renshuu_schedule_id"], name: "index_renshuu_items_on_renshuu_schedule_id"
+    t.index ["user_id"], name: "index_renshuu_items_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.datetime "last_renshuu_sync"
     t.datetime "last_wanikani_sync"
     t.integer "level", default: 1, null: false
     t.string "openrouter_api_key"
+    t.string "renshuu_api_key"
     t.datetime "updated_at", null: false
     t.string "wanikani_api_key"
     t.index ["email"], name: "index_users_on_email", unique: true
@@ -190,5 +210,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_10_015148) do
   add_foreign_key "dialogue_attempts", "dialogues"
   add_foreign_key "dialogue_attempts", "users"
   add_foreign_key "dialogues", "users"
+  add_foreign_key "renshuu_items", "users"
   add_foreign_key "wani_subjects", "users"
 end

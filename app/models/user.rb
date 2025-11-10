@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   has_many :wani_subjects, dependent: :destroy
+  has_many :renshuu_items, dependent: :destroy
   has_many :dialogues, dependent: :destroy
   has_many :dialogue_attempts, dependent: :destroy
 
@@ -7,6 +8,10 @@ class User < ApplicationRecord
 
   def wanikani_configured?
     wanikani_api_key.present?
+  end
+
+  def renshuu_configured?
+    renshuu_api_key.present?
   end
 
   def openrouter_configured?
