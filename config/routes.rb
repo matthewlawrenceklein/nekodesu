@@ -19,6 +19,7 @@ Rails.application.routes.draw do
     end
     member do
       post :start
+      get :listen
       post :ready
       post :answer
       get :results

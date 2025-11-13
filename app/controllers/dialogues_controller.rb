@@ -1,6 +1,6 @@
 class DialoguesController < ApplicationController
   before_action :set_user
-  before_action :set_dialogue, only: [ :show, :start, :ready, :answer, :results ]
+  before_action :set_dialogue, only: [ :show, :start, :listen, :ready, :answer, :results ]
 
   def index
     @dialogues_count = @user.dialogues.count
@@ -45,6 +45,11 @@ class DialoguesController < ApplicationController
     )
 
     redirect_to dialogue_path(@dialogue)
+  end
+
+  def listen
+    # Show audio listening interface
+    # Audio files are stored in dialogue.audio_files JSONB
   end
 
   def ready
