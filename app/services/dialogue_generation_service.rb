@@ -9,6 +9,38 @@ class DialogueGenerationService
   MAX_KANJI_FOR_PROMPT = 200
   MAX_VOCAB_FOR_PROMPT = 300
 
+  # Available dialogue characters
+  CHARACTERS = [
+    {
+      name: "田中さん",
+      name_romaji: "Tanaka-san",
+      age_group: "young adult",
+      occupation: "convenience store worker",
+      personality: "friendly, knows all the customers"
+    },
+    {
+      name: "山田くん",
+      name_romaji: "Yamada-kun",
+      age_group: "high school student",
+      occupation: "athlete",
+      personality: "friendly and excited"
+    },
+    {
+      name: "ゆみちゃん",
+      name_romaji: "Yumi-chan",
+      age_group: "middle school student",
+      occupation: "student",
+      personality: "nerd, shy but always happy to talk about her interests"
+    },
+    {
+      name: "小川先生",
+      name_romaji: "Ogawa-sensei",
+      age_group: "retired",
+      occupation: "retired university professor",
+      personality: "gruff but knowledgeable, gives great advice"
+    }
+  ].freeze
+
   def initialize(user, difficulty_level: "beginner")
     @user = user
     @difficulty_level = difficulty_level
@@ -119,18 +151,21 @@ class DialogueGenerationService
       The vocabulary comes from the user's WaniKani and Renshuu study materials.
 
       Requirements:
-      1. Use ONLY the kanji and vocabulary words provided (from both WaniKani and Renshuu)
-      2. Create a natural, conversational dialogue
-      3. Match the grammar complexity and formality to the difficulty level:
+      1. Choose EXACTLY 2 characters from the provided character list to participate in the dialogue
+      2. Create dialogue content that is consistent with the chosen characters' personalities, age groups, and occupations
+      3. Use ONLY the kanji and vocabulary words provided (from both WaniKani and Renshuu)
+      4. Create a natural, conversational dialogue that reflects the relationship between the characters
+      5. Match the grammar complexity and formality to the difficulty level:
          - Beginner (N5): Simple present/past tense, basic particles (は、が、を、に、で), polite form (です/ます)
          - Intermediate (N4-N3): More complex particles, て-form, conditionals, casual and polite forms
          - Advanced (N2-N1): Complex grammar, honorifics/humble forms, nuanced expressions, literary style
-      4. Include EXACTLY 10 comprehension questions with 4 multiple choice options each
-      5. Questions should test different aspects: vocabulary, grammar, context, inference
-      6. Provide English translations
+      6. Include EXACTLY 10 comprehension questions with 4 multiple choice options each
+      7. Questions should test different aspects: vocabulary, grammar, context, inference
+      8. Provide English translations
 
       Format your response as JSON with this structure:
       {
+        "participants": ["Character Name 1", "Character Name 2"],
         "japanese_text": "The dialogue in Japanese",
         "english_translation": "The English translation",
         "questions": [
@@ -148,10 +183,14 @@ class DialogueGenerationService
   def build_prompt(vocabulary_data)
     jlpt_level = jlpt_level_for_difficulty
     grammar_notes = grammar_notes_for_difficulty
+    characters_list = format_characters_for_prompt
 
     <<~PROMPT
       Difficulty Level: #{@difficulty_level} (#{jlpt_level})
       WaniKani Levels: #{vocabulary_data[:min_level]}-#{vocabulary_data[:max_level]}
+
+      Available Characters (choose EXACTLY 2):
+      #{characters_list}
 
       Available Kanji (#{vocabulary_data[:kanji].length} randomly selected from WaniKani + Renshuu):
       #{vocabulary_data[:kanji].join(", ")}
@@ -161,8 +200,9 @@ class DialogueGenerationService
 
       Grammar Guidelines: #{grammar_notes}
 
-      Please create a natural Japanese dialogue using ONLY these kanji and vocabulary words.
-      Use grammar and formality appropriate for #{jlpt_level} level.
+      Please choose 2 characters from the list above and create a natural Japanese dialogue between them using ONLY these kanji and vocabulary words.
+      The dialogue should reflect the characters' personalities, age groups, and relationship.
+      Use grammar and formality appropriate for #{jlpt_level} level and the characters' relationship.
       Include EXACTLY 10 comprehension questions to test understanding of vocabulary, grammar, context, and inference.
     PROMPT
   end
@@ -193,6 +233,12 @@ class DialogueGenerationService
     end
   end
 
+  def format_characters_for_prompt
+    CHARACTERS.map do |char|
+      "- #{char[:name]} (#{char[:name_romaji]}): #{char[:age_group]}, #{char[:occupation]}. #{char[:personality]}"
+    end.join("\n")
+  end
+
   def parse_and_create_dialogue(response, vocabulary_data, generation_time)
     content = extract_content(response)
     parsed = parse_json_response(content)
@@ -200,6 +246,7 @@ class DialogueGenerationService
     dialogue = @user.dialogues.create!(
       japanese_text: parsed["japanese_text"],
       english_translation: parsed["english_translation"],
+      participants: parsed["participants"] || [],
       difficulty_level: @difficulty_level,
       min_level: vocabulary_data[:min_level],
       max_level: vocabulary_data[:max_level],

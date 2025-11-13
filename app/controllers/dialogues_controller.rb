@@ -110,6 +110,12 @@ class DialoguesController < ApplicationController
     end
   end
 
+  def destroy_all
+    count = @user.dialogues.count
+    @user.dialogues.destroy_all
+    redirect_to root_path, notice: "Successfully deleted #{count} dialogue(s) and all associated data."
+  end
+
   private
 
   def set_user

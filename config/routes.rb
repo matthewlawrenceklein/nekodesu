@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   resources :dialogues, only: [ :index, :show, :new ] do
     collection do
       post :generate
+      delete :destroy_all
     end
     member do
       post :start
