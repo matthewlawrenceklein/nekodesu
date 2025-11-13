@@ -9,10 +9,59 @@
           </span>
         </div>
 
-        <div class="prose prose-lg max-w-none mb-8">
-          <div class="text-2xl leading-relaxed text-gray-900 dark:text-gray-100 mb-6 font-japanese">
-            <%= simple_format(@dialogue.japanese_text) %>
+        <%# Participants info %>
+        <% if @dialogue.participants.present? %>
+          <div class="text-center mb-6 text-sm text-gray-600 dark:text-gray-400">
+            Conversation between <%= @dialogue.participants.join(" and ") %>
           </div>
+        <% end %>
+
+        <%# Message-style dialogue display %>
+        <div class="space-y-5 mb-8 max-h-[70vh] overflow-y-auto px-2">
+          <% dialogue_lines = parse_dialogue_lines(@dialogue.japanese_text) %>
+          <% first_speaker = dialogue_lines.first&.dig(:speaker) %>
+
+          <% dialogue_lines.each do |line| %>
+            <% if line[:speaker] %>
+              <div class="flex <%= message_alignment_class(line[:speaker], first_speaker) %> items-end gap-4">
+                <% if line[:speaker] == first_speaker %>
+                  <%# Left side - first speaker %>
+                  <div class="flex-shrink-0">
+                    <% if character_avatar_image(line[:speaker]) %>
+                      <%= image_tag character_avatar_image(line[:speaker]), class: "w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600", alt: line[:speaker] %>
+                    <% else %>
+                      <div class="w-16 h-16 rounded-full <%= character_avatar_color(line[:speaker]) %> flex items-center justify-center text-white font-bold text-xl border-2 border-gray-200 dark:border-gray-600">
+                        <%= line[:speaker].chars.first %>
+                      </div>
+                    <% end %>
+                  </div>
+                  <div class="flex flex-col items-start max-w-[70%]">
+                    <span class="text-sm text-gray-500 dark:text-gray-400 mb-1 ml-2"><%= line[:speaker] %></span>
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-bl-sm px-5 py-4">
+                      <p class="text-xl text-gray-900 dark:text-gray-100 font-japanese"><%= line[:text] %></p>
+                    </div>
+                  </div>
+                <% else %>
+                  <%# Right side - second speaker %>
+                  <div class="flex flex-col items-end max-w-[70%]">
+                    <span class="text-sm text-gray-500 dark:text-gray-400 mb-1 mr-2"><%= line[:speaker] %></span>
+                    <div class="bg-blue-500 dark:bg-blue-600 rounded-2xl rounded-br-sm px-5 py-4">
+                      <p class="text-xl text-white font-japanese"><%= line[:text] %></p>
+                    </div>
+                  </div>
+                  <div class="flex-shrink-0">
+                    <% if character_avatar_image(line[:speaker]) %>
+                      <%= image_tag character_avatar_image(line[:speaker]), class: "w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600", alt: line[:speaker] %>
+                    <% else %>
+                      <div class="w-16 h-16 rounded-full <%= character_avatar_color(line[:speaker]) %> flex items-center justify-center text-white font-bold text-xl border-2 border-gray-200 dark:border-gray-600">
+                        <%= line[:speaker].chars.first %>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
         </div>
 
         <%= button_to "Ready?", ready_dialogue_path(@dialogue), method: :post, class: "w-full bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-bold text-lg py-4 rounded-lg transition duration-200" %>
