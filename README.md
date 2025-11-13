@@ -5,24 +5,40 @@ A Rails application that generates personalized Japanese dialogues based on your
 ## Features
 
 ### 🎯 Core Features
-- **Dual Vocabulary Sources**: 
+- **Dual Vocabulary Sources**:
   - **WaniKani Integration**: Syncs vocabulary and kanji at or below your current level
   - **Renshuu Integration**: Syncs your studied vocabulary, kanji, grammar points, and sentences
   - **Smart Combination**: Creates non-redundant superset from both sources
 - **AI-Powered Dialogues**: Generates natural Japanese conversations using OpenRouter AI (Claude 3.5 Sonnet)
+- **Text-to-Speech Audio**:
+  - **OpenAI TTS Integration**: Generates natural-sounding audio for each dialogue line
+  - **Character Voices**: Each character has a unique voice (echo, onyx, nova, fable)
+  - **Audio Listening Mode**: Listen to dialogues with custom audio controls
+  - **Background Processing**: Audio generation happens asynchronously via background jobs
 - **Random Vocabulary Sampling**: Each dialogue uses a different random selection from your combined vocabulary pool
 - **Smart Question System**: 10 comprehension questions per dialogue, 4 randomly selected per attempt
 - **Progress Tracking**: Track your scores, completion rate, and improvement over time
 - **Retry System**: Practice the same dialogue multiple times with different random questions
 
 ### 🎨 User Experience
+- **Dual Practice Modes**:
+  - **Reading Mode**: Text-based dialogue with comprehension questions
+  - **Listening Mode**: Audio-first experience with text reveal on click
+- **Interactive Audio Controls**:
+  - Custom play/pause buttons for each dialogue line
+  - "Play All" feature for sequential playback
+  - Visual feedback with play/pause icon transitions
+- **Text Reveal System**: Text obscured by default, click to reveal (maintains selectability)
 - **Dark Mode**: Full dark mode support with persistent preference
 - **Responsive Design**: Beautiful Tailwind CSS interface that works on all devices
 - **Real-time Generation**: Generate new dialogues on-demand through the UI
 - **Difficulty Levels**: Beginner (N5), Intermediate (N4-N3), Advanced (N2-N1)
 
 ### ⚙️ Technical Features
-- **Background Jobs**: Scheduled syncs (every 6 hours, offset) for both WaniKani and Renshuu
+- **Background Jobs**:
+  - Scheduled syncs (every 6 hours, offset) for both WaniKani and Renshuu
+  - Async audio generation with retry logic (3 attempts with exponential backoff)
+- **Active Storage**: MP3 audio files stored with metadata in JSONB
 - **Level-Based Content**: WaniKani vocabulary filtered by level, Renshuu uses all studied items
 - **Smart Sampling**: Randomly selects up to 200 kanji + 300 vocabulary per dialogue from combined pool
 - **Grammar Matching**: Dialogue complexity matches JLPT level expectations
@@ -33,9 +49,12 @@ A Rails application that generates personalized Japanese dialogues based on your
 - **Framework**: Rails 8.1
 - **Database**: PostgreSQL 16
 - **Job Processing**: GoodJob (PostgreSQL-backed)
+- **File Storage**: Active Storage (for audio files)
 - **Views**: ERB with Tailwind CSS
 - **HTTP Client**: Faraday
-- **AI Integration**: OpenRouter gem
+- **AI Integrations**:
+  - OpenRouter gem (Claude 3.5 Sonnet for dialogue generation)
+  - OpenAI TTS API (text-to-speech audio generation)
 - **Containerization**: Docker & Docker Compose
 
 ## Prerequisites
@@ -45,6 +64,7 @@ A Rails application that generates personalized Japanese dialogues based on your
   - [WaniKani API Key](https://www.wanikani.com/settings/personal_access_tokens) - Required for WaniKani vocabulary sync
   - [Renshuu API Key](https://www.renshuu.org/index.php?page=profile/api) - Required for Renshuu vocabulary sync
   - [OpenRouter API Key](https://openrouter.ai/keys) - Required for AI dialogue generation
+  - [OpenAI API Key](https://platform.openai.com/api-keys) - Required for text-to-speech audio generation
 
 ## Getting Started
 
@@ -58,6 +78,7 @@ cp env.example .env
 # WANIKANI_API_KEY=your_wanikani_key_here
 # RENSHUU_API_KEY=your_renshuu_key_here
 # OPENROUTER_API_KEY=your_openrouter_key_here
+# OPENAI_API_KEY=your_openai_key_here
 ```
 
 ### 2. Build and Start Services
@@ -107,7 +128,8 @@ docker compose exec web rails "dialogues:generate_now[1,10,beginner]"
 Open your browser to [http://localhost:3000](http://localhost:3000)
 
 **Available Pages:**
-- `/` - Dashboard with stats and "Start Reading" button
+- `/` - Dashboard with stats, "Start Reading" and "Start Listening" buttons
+- `/dialogues/:id/listen` - Audio listening mode with text reveal
 - `/dialogues/new` - Generate more dialogues
 - `/good_job` - Background job monitoring
 
@@ -164,16 +186,20 @@ app/
 ├── jobs/
 │   ├── wanikani_sync_job.rb        # Sync individual user
 │   ├── wanikani_sync_all_users_job.rb  # Scheduled sync for all
-│   └── generate_dialogues_job.rb   # Bulk dialogue generation
+│   ├── generate_dialogues_job.rb   # Bulk dialogue generation
+│   └── generate_dialogue_audio_job.rb  # Async audio generation
 ├── services/
 │   ├── wanikani_client.rb          # WaniKani API wrapper
 │   ├── wanikani_sync_service.rb    # Sync orchestration
 │   ├── openrouter_client.rb        # OpenRouter AI wrapper
-│   └── dialogue_generation_service.rb  # AI dialogue generation
+│   ├── openai_tts_client.rb        # OpenAI TTS API wrapper
+│   ├── dialogue_generation_service.rb  # AI dialogue generation
+│   └── dialogue_audio_generation_service.rb  # Audio generation orchestration
 └── views/
     └── dialogues/
         ├── index.html.erb          # Dashboard
         ├── show.html.erb           # Reading & questions
+        ├── listen.html.erb         # Audio listening mode
         ├── results.html.erb        # Score & review
         └── new.html.erb            # Generation form
 ```
@@ -261,14 +287,22 @@ docker compose exec web bundle exec rubocop -A
 - Stores dialogue and questions in database
 - **Each dialogue is unique** due to random vocabulary selection
 
-### 3. Reading Practice
+### 3. Audio Generation
+- After dialogue creation, audio generation job is automatically queued
+- Background job processes each dialogue line with OpenAI TTS
+- Each character gets a unique voice (田中さん: echo, 山田くん: onyx, ゆみちゃん: nova, 小川先生: fable)
+- Audio files stored in Active Storage with metadata in JSONB
+- Retry logic handles API failures (3 attempts with exponential backoff)
+
+### 4. Reading Practice
 - Dashboard shows random dialogue on each visit
-- Read Japanese text, click "Ready?" to start questions
+- **Reading Mode**: Read Japanese text, click "Ready?" to start questions
+- **Listening Mode**: Listen to audio with text obscured, click bubbles to reveal
 - Answer 4 randomly selected questions (out of 10 total)
 - See immediate results with explanations
 - Retry same dialogue with different random questions
 
-### 4. Progress Tracking
+### 5. Progress Tracking
 - Tracks all attempts with scores
 - Shows completion rate and average score
 - Stores which questions were shown in each attempt
@@ -279,6 +313,10 @@ docker compose exec web bundle exec rubocop -A
 - **Dual vocabulary sources**: Combines WaniKani (level-based) + Renshuu (all studied items) for maximum coverage
 - **Smart sampling**: Random selection from combined pool ensures variety while respecting token limits
 - **Non-redundant superset**: Deduplicates overlapping items between sources
+- **Character-specific voices**: Each character has a unique TTS voice for natural conversation feel
+- **Async audio generation**: Background processing prevents UI blocking, with retry logic for reliability
+- **Text reveal with selectability**: Overlay approach obscures text while maintaining copy/paste functionality
+- **Custom audio controls**: Circular play/pause buttons with sequential "Play All" feature
 - **10 questions, 4 shown**: Allows multiple attempts on same dialogue with variety
 - **Random dialogue selection**: Ensures varied practice
 - **Dark mode**: Reduces eye strain during study sessions
@@ -297,6 +335,7 @@ This application is Docker-ready and can be deployed to any container platform. 
 - `WANIKANI_API_KEY` - For WaniKani syncing (or per-user)
 - `RENSHUU_API_KEY` - For Renshuu syncing (or per-user)
 - `OPENROUTER_API_KEY` - For AI generation (or per-user)
+- `OPENAI_API_KEY` - For TTS audio generation (or per-user)
 
 ## License
 
