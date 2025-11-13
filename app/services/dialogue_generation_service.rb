@@ -258,6 +258,9 @@ class DialogueGenerationService
 
     create_questions(dialogue, parsed["questions"])
 
+    # Enqueue audio generation job asynchronously
+    GenerateDialogueAudioJob.perform_later(dialogue.id)
+
     dialogue
   end
 

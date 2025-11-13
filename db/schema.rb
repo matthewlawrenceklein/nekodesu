@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_12_235900) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_12_235901) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_12_235900) do
   end
 
   create_table "dialogues", force: :cascade do |t|
+    t.jsonb "audio_files", default: []
     t.datetime "created_at", null: false
     t.string "difficulty_level", null: false
     t.text "english_translation", null: false

@@ -36,6 +36,7 @@ services:
       WANIKANI_API_KEY: ${WANIKANI_API_KEY}
       MARUMORI_API_KEY: ${MARUMORI_API_KEY}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     stdin_open: true
     tty: true
 
@@ -58,6 +59,7 @@ services:
       WANIKANI_API_KEY: ${WANIKANI_API_KEY}
       MARUMORI_API_KEY: ${MARUMORI_API_KEY}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
 
 volumes:
   postgres_data:

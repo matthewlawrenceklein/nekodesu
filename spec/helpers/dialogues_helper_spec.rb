@@ -84,6 +84,28 @@ RSpec.describe DialoguesHelper, type: :helper do
     end
   end
 
+  describe '#character_tts_voice' do
+    it 'returns echo for 田中さん' do
+      expect(helper.character_tts_voice("田中さん")).to eq("echo")
+    end
+
+    it 'returns onyx for 山田くん' do
+      expect(helper.character_tts_voice("山田くん")).to eq("onyx")
+    end
+
+    it 'returns nova for ゆみちゃん' do
+      expect(helper.character_tts_voice("ゆみちゃん")).to eq("nova")
+    end
+
+    it 'returns fable for 小川先生' do
+      expect(helper.character_tts_voice("小川先生")).to eq("fable")
+    end
+
+    it 'returns alloy for unknown character' do
+      expect(helper.character_tts_voice("Unknown")).to eq("alloy")
+    end
+  end
+
   describe '#message_alignment_class' do
     it 'returns justify-start for first speaker' do
       expect(helper.message_alignment_class("田中さん", "田中さん")).to eq("justify-start")

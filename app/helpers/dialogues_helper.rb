@@ -38,12 +38,12 @@ module DialoguesHelper
   def character_tts_voice(character_name)
     voices = {
       "田中さん" => "echo",
-      "山田くん" => "verse",
-      "ゆみちゃん" => "sage",
-      "小川先生" => "ash"
+      "山田くん" => "onyx",
+      "ゆみちゃん" => "nova",
+      "小川先生" => "fable"
     }
 
-    voices[character_name] || "Yuri"
+    voices[character_name] || "alloy"
   end
 
   def message_alignment_class(speaker, first_speaker)
