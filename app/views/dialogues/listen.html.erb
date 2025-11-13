@@ -15,11 +15,20 @@
       <% end %>
 
       <% if @dialogue.audio_files.present? %>
+        <%# Play All Button %>
+        <div class="text-center mb-6">
+          <button id="playAllBtn" class="bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 flex items-center gap-2 mx-auto">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+            </svg>
+            <span>Play Entire Conversation</span>
+          </button>
+        </div>
         <%# Audio playback interface %>
         <div class="space-y-5 mb-8 max-h-[70vh] overflow-y-auto px-2">
           <% dialogue_lines = parse_dialogue_lines(@dialogue.japanese_text) %>
           <% first_speaker = dialogue_lines.first&.dig(:speaker) %>
-          
+
           <% dialogue_lines.each_with_index do |line, index| %>
             <% if line[:speaker] %>
               <% audio_file = @dialogue.audio_files.find { |af| af["line_index"] == index } %>
@@ -37,36 +46,56 @@
                   </div>
                   <div class="flex flex-col items-start max-w-[70%]">
                     <span class="text-sm text-gray-500 dark:text-gray-400 mb-1 ml-2"><%= line[:speaker] %></span>
-                    <div class="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-bl-sm px-5 py-4 w-full">
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-bl-sm px-5 py-4 w-full cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" onclick="toggleOverlay(this)">
                       <% if audio_file && audio_file["audio_key"] %>
-                        <audio controls class="w-full mb-2">
-                          <source src="<%= rails_blob_path(ActiveStorage::Blob.find_by(key: audio_file["audio_key"])) %>" type="audio/mpeg">
-                          Your browser does not support the audio element.
-                        </audio>
+                        <div class="flex items-center gap-3 mb-2">
+                          <button class="audio-play-btn flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 flex items-center justify-center text-white transition-all shadow-md hover:shadow-lg" data-audio-url="<%= rails_blob_path(ActiveStorage::Blob.find_by(key: audio_file["audio_key"])) %>" data-line-index="<%= index %>">
+                            <svg class="play-icon w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                            </svg>
+                            <svg class="pause-icon w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/>
+                            </svg>
+                          </button>
+                          <span class="text-xs text-gray-500 dark:text-gray-400">Click bubble to reveal text</span>
+                        </div>
                       <% else %>
                         <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
                           🎵 Audio generating...
                         </div>
                       <% end %>
-                      <p class="text-xl text-gray-900 dark:text-gray-100 font-japanese"><%= line[:text] %></p>
+                      <div class="text-container relative">
+                        <p class="text-xl text-gray-900 dark:text-gray-100 font-japanese"><%= line[:text] %></p>
+                        <div class="text-overlay absolute inset-0 bg-gray-100 dark:bg-gray-700 rounded transition-opacity duration-300"></div>
+                      </div>
                     </div>
                   </div>
                 <% else %>
                   <%# Right side - second speaker %>
                   <div class="flex flex-col items-end max-w-[70%]">
                     <span class="text-sm text-gray-500 dark:text-gray-400 mb-1 mr-2"><%= line[:speaker] %></span>
-                    <div class="bg-blue-500 dark:bg-blue-600 rounded-2xl rounded-br-sm px-5 py-4 w-full">
+                    <div class="bg-blue-500 dark:bg-blue-600 rounded-2xl rounded-br-sm px-5 py-4 w-full cursor-pointer hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors" onclick="toggleOverlay(this)">
                       <% if audio_file && audio_file["audio_key"] %>
-                        <audio controls class="w-full mb-2">
-                          <source src="<%= rails_blob_path(ActiveStorage::Blob.find_by(key: audio_file["audio_key"])) %>" type="audio/mpeg">
-                          Your browser does not support the audio element.
-                        </audio>
+                        <div class="flex items-center gap-3 mb-2">
+                          <button class="audio-play-btn flex-shrink-0 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-all shadow-md hover:shadow-lg" data-audio-url="<%= rails_blob_path(ActiveStorage::Blob.find_by(key: audio_file["audio_key"])) %>" data-line-index="<%= index %>">
+                            <svg class="play-icon w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                            </svg>
+                            <svg class="pause-icon w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/>
+                            </svg>
+                          </button>
+                          <span class="text-xs text-white/75">Click bubble to reveal text</span>
+                        </div>
                       <% else %>
                         <div class="text-sm text-white opacity-75 mb-2">
                           🎵 Audio generating...
                         </div>
                       <% end %>
-                      <p class="text-xl text-white font-japanese"><%= line[:text] %></p>
+                      <div class="text-container relative">
+                        <p class="text-xl text-white font-japanese"><%= line[:text] %></p>
+                        <div class="text-overlay absolute inset-0 bg-blue-500 dark:bg-blue-600 rounded transition-opacity duration-300"></div>
+                      </div>
                     </div>
                   </div>
                   <div class="flex-shrink-0">
@@ -110,11 +139,138 @@
     line-height: 2;
   }
   
-  audio {
-    height: 32px;
+  .text-container {
+    position: relative;
   }
   
-  audio::-webkit-media-controls-panel {
-    background-color: rgba(255, 255, 255, 0.1);
+  .text-overlay {
+    pointer-events: none;
+    opacity: 1;
+  }
+  
+  .text-overlay.hidden {
+    opacity: 0;
   }
 </style>
+
+<script>
+  let currentAudio = null;
+  let currentButton = null;
+  let isPlayingAll = false;
+  let playAllQueue = [];
+  let playAllIndex = 0;
+
+  // Toggle overlay on individual message bubble
+  function toggleOverlay(element) {
+    const overlay = element.querySelector('.text-overlay');
+    if (overlay) {
+      overlay.classList.toggle('hidden');
+    }
+  }
+
+  // Stop current audio if playing
+  function stopCurrentAudio() {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      if (currentButton) {
+        const playIcon = currentButton.querySelector('.play-icon');
+        const pauseIcon = currentButton.querySelector('.pause-icon');
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+      }
+      currentAudio = null;
+      currentButton = null;
+    }
+  }
+
+  // Play audio for a specific button
+  function playAudio(button, audioUrl) {
+    // If clicking the same button that's playing, pause it
+    if (currentButton === button && currentAudio && !currentAudio.paused) {
+      stopCurrentAudio();
+      return;
+    }
+
+    // Stop any currently playing audio
+    stopCurrentAudio();
+
+    // Create and play new audio
+    currentAudio = new Audio(audioUrl);
+    currentButton = button;
+
+    const playIcon = button.querySelector('.play-icon');
+    const pauseIcon = button.querySelector('.pause-icon');
+
+    currentAudio.play();
+    playIcon.classList.add('hidden');
+    pauseIcon.classList.remove('hidden');
+
+    // When audio ends, reset button
+    currentAudio.addEventListener('ended', () => {
+      playIcon.classList.remove('hidden');
+      pauseIcon.classList.add('hidden');
+
+      // If playing all, advance to next
+      if (isPlayingAll) {
+        playAllIndex++;
+        if (playAllIndex < playAllQueue.length) {
+          setTimeout(() => {
+            playAllQueue[playAllIndex].click();
+          }, 500); // Small delay between tracks
+        } else {
+          // Finished playing all
+          isPlayingAll = false;
+          updatePlayAllButton();
+        }
+      }
+    });
+  }
+
+  // Update Play All button text
+  function updatePlayAllButton() {
+    const playAllBtn = document.getElementById('playAllBtn');
+    const btnText = playAllBtn.querySelector('span');
+    if (isPlayingAll) {
+      btnText.textContent = 'Stop Playing';
+    } else {
+      btnText.textContent = 'Play Entire Conversation';
+    }
+  }
+
+  // Initialize audio controls
+  document.addEventListener('DOMContentLoaded', () => {
+    // Add click handlers to all audio play buttons
+    const audioButtons = document.querySelectorAll('.audio-play-btn');
+    audioButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent bubble click from triggering
+        const audioUrl = button.dataset.audioUrl;
+        playAudio(button, audioUrl);
+      });
+    });
+
+    // Play All button handler
+    const playAllBtn = document.getElementById('playAllBtn');
+    if (playAllBtn) {
+      playAllBtn.addEventListener('click', () => {
+        if (isPlayingAll) {
+          // Stop playing all
+          isPlayingAll = false;
+          stopCurrentAudio();
+          updatePlayAllButton();
+        } else {
+          // Start playing all
+          isPlayingAll = true;
+          playAllQueue = Array.from(audioButtons);
+          playAllIndex = 0;
+          updatePlayAllButton();
+
+          if (playAllQueue.length > 0) {
+            playAllQueue[0].click();
+          }
+        }
+      });
+    }
+  });
+</script>
