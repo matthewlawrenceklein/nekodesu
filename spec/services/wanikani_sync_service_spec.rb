@@ -44,6 +44,10 @@ RSpec.describe WanikaniSyncService do
       }
     end
 
+    before do
+      user.update!(level: 5)
+    end
+
     it "fetches and syncs subjects from WaniKani" do
       allow(client).to receive(:get_subjects).and_return(subject_response)
 
@@ -55,6 +59,24 @@ RSpec.describe WanikaniSyncService do
       expect(subject.external_id).to eq(1)
       expect(subject.subject_type).to eq("kanji")
       expect(subject.characters).to eq("一")
+    end
+
+    it "syncs subjects from levels 1 to (current_level - 1)" do
+      user.update!(level: 10)
+      expect(client).to receive(:get_subjects)
+        .with(hash_including(levels: "1,2,3,4,5,6,7,8,9"))
+        .and_return(subject_response)
+
+      service.sync_subjects
+    end
+
+    it "syncs at least level 1 when user is at level 1" do
+      user.update!(level: 1)
+      expect(client).to receive(:get_subjects)
+        .with(hash_including(levels: "1"))
+        .and_return(subject_response)
+
+      service.sync_subjects
     end
 
     it "uses updated_after parameter if last sync exists" do

@@ -16,11 +16,13 @@ class DialogueAudioGenerationService
       next unless line[:speaker] && line[:text]
 
       voice = character_tts_voice(line[:speaker])
+      instructions = character_tts_instructions(line[:speaker])
 
       begin
         audio_data = @tts_client.generate_speech(
           text: line[:text],
-          voice: voice
+          voice: voice,
+          instructions: instructions
         )
 
         audio_blob = ActiveStorage::Blob.create_and_upload!(

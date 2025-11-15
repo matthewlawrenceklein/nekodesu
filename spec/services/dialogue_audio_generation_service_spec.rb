@@ -38,12 +38,34 @@ RSpec.describe DialogueAudioGenerationService do
     it "uses correct voice for each speaker" do
       expect_any_instance_of(OpenaiTtsClient).to receive(:generate_speech).with(
         text: "こんにちは",
-        voice: "echo"
+        voice: "echo",
+        instructions: kind_of(String)
       ).and_return(mock_audio_data)
 
       expect_any_instance_of(OpenaiTtsClient).to receive(:generate_speech).with(
         text: "元気ですか",
-        voice: "onyx"
+        voice: "onyx",
+        instructions: kind_of(String)
+      ).and_return(mock_audio_data)
+
+      service.generate
+    end
+
+    it "passes character-specific instructions to TTS client" do
+      expect_any_instance_of(OpenaiTtsClient).to receive(:generate_speech).with(
+        hash_including(
+          text: "こんにちは",
+          voice: "echo",
+          instructions: include("Friendly, warm, approachable")
+        )
+      ).and_return(mock_audio_data)
+
+      expect_any_instance_of(OpenaiTtsClient).to receive(:generate_speech).with(
+        hash_including(
+          text: "元気ですか",
+          voice: "onyx",
+          instructions: include("Determined, confident, passionate")
+        )
       ).and_return(mock_audio_data)
 
       service.generate

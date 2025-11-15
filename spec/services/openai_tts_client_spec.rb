@@ -66,6 +66,31 @@ RSpec.describe OpenaiTtsClient do
       client.generate_speech(text: text, voice: voice, speed: 1.5)
     end
 
+    it "allows custom instructions" do
+      instructions = "Voice Affect: Friendly and warm."
+      expect_any_instance_of(Faraday::Connection).to receive(:post) do |&block|
+        req = double("request", headers: {})
+        allow(req).to receive(:headers=)
+        expect(req).to receive(:body=).with(hash_including(instructions: instructions))
+        block.call(req)
+        mock_response
+      end
+
+      client.generate_speech(text: text, voice: voice, instructions: instructions)
+    end
+
+    it "omits instructions when not provided" do
+      expect_any_instance_of(Faraday::Connection).to receive(:post) do |&block|
+        req = double("request", headers: {})
+        allow(req).to receive(:headers=)
+        expect(req).to receive(:body=).with(hash_not_including(:instructions))
+        block.call(req)
+        mock_response
+      end
+
+      client.generate_speech(text: text, voice: voice)
+    end
+
     context "error handling" do
       it "raises ApiError when API key is blank" do
         client = described_class.new("")

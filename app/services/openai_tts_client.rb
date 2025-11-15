@@ -12,7 +12,7 @@ class OpenaiTtsClient
     end
   end
 
-  def generate_speech(text:, voice:, model: "tts-1", response_format: "mp3", speed: 1.0)
+  def generate_speech(text:, voice:, model: "tts-1", response_format: "mp3", speed: 1.0, instructions: nil)
     raise ApiError, "API key not configured" if @api_key.blank?
     raise ApiError, "Text cannot be blank" if text.blank?
     raise ApiError, "Voice cannot be blank" if voice.blank?
@@ -20,13 +20,15 @@ class OpenaiTtsClient
     response = @connection.post("audio/speech") do |req|
       req.headers["Authorization"] = "Bearer #{@api_key}"
       req.headers["Content-Type"] = "application/json"
-      req.body = {
+      body = {
         model: model,
         input: text,
         voice: voice,
         response_format: response_format,
         speed: speed
       }
+      body[:instructions] = instructions if instructions.present?
+      req.body = body
     end
 
     if response.success?

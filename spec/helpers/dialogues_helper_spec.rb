@@ -106,6 +106,38 @@ RSpec.describe DialoguesHelper, type: :helper do
     end
   end
 
+  describe '#character_tts_instructions' do
+    it 'returns friendly instructions for 田中さん' do
+      instructions = helper.character_tts_instructions("田中さん")
+      expect(instructions).to include("Friendly, warm, approachable")
+      expect(instructions).to include("Casual, upbeat, helpful")
+    end
+
+    it 'returns determined instructions for 山田くん' do
+      instructions = helper.character_tts_instructions("山田くん")
+      expect(instructions).to include("Determined, confident, passionate")
+      expect(instructions).to include("Excited, motivational")
+    end
+
+    it 'returns playful instructions for ゆみちゃん' do
+      instructions = helper.character_tts_instructions("ゆみちゃん")
+      expect(instructions).to include("Playful, witty, clever")
+      expect(instructions).to include("Sarcastic but friendly")
+    end
+
+    it 'returns authoritative instructions for 小川先生' do
+      instructions = helper.character_tts_instructions("小川先生")
+      expect(instructions).to include("Authoritative, wise, gruff")
+      expect(instructions).to include("Serious, measured")
+    end
+
+    it 'returns default instructions for unknown character' do
+      instructions = helper.character_tts_instructions("Unknown")
+      expect(instructions).to include("Natural, conversational")
+      expect(instructions).to include("Neutral and friendly")
+    end
+  end
+
   describe '#message_alignment_class' do
     it 'returns justify-start for first speaker' do
       expect(helper.message_alignment_class("田中さん", "田中さん")).to eq("justify-start")
