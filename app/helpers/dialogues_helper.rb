@@ -159,4 +159,11 @@ module DialoguesHelper
     end
     result.html_safe
   end
+
+  # Process text based on user's unknown kanji display mode preference
+  # Modes: 'furigana' (show kanji with reading above) or 'hiragana' (replace with reading)
+  def render_text_with_unknown_kanji(text, user)
+    service = KanjiReplacementService.new(user)
+    service.process_text(text).html_safe
+  end
 end

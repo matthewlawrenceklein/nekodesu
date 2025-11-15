@@ -55,7 +55,7 @@
                   <div class="flex flex-col items-start max-w-[70%]">
                     <span class="text-sm text-gray-500 dark:text-gray-400 mb-1 ml-2"><%= line[:speaker] %></span>
                     <div class="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-bl-sm px-5 py-4">
-                      <p class="text-xl text-gray-900 dark:text-gray-100 font-japanese"><%= add_furigana_to_unknown_kanji(line[:text], @dialogue.user) %></p>
+                      <p class="text-xl text-gray-900 dark:text-gray-100 font-japanese"><%= render_text_with_unknown_kanji(line[:text], @dialogue.user) %></p>
                     </div>
                   </div>
                 <% else %>
@@ -63,7 +63,7 @@
                   <div class="flex flex-col items-end max-w-[70%]">
                     <span class="text-sm text-gray-500 dark:text-gray-400 mb-1 mr-2"><%= line[:speaker] %></span>
                     <div class="bg-blue-500 dark:bg-blue-600 rounded-2xl rounded-br-sm px-5 py-4">
-                      <p class="text-xl text-white font-japanese"><%= add_furigana_to_unknown_kanji(line[:text], @dialogue.user) %></p>
+                      <p class="text-xl text-white font-japanese"><%= render_text_with_unknown_kanji(line[:text], @dialogue.user) %></p>
                     </div>
                   </div>
                   <div class="flex-shrink-0">
@@ -135,5 +135,34 @@
   .dark .unknown-kanji {
     background-color: rgba(251, 191, 36, 0.2);
     border-bottom-color: rgb(217, 119, 6);
+  }
+  
+  /* Furigana (ruby) styling */
+  ruby {
+    ruby-position: over;
+    ruby-align: center;
+  }
+  
+  rt {
+    font-size: 0.5em;
+    color: rgba(251, 191, 36, 0.95);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+  }
+  
+  .dark rt {
+    color: rgba(251, 191, 36, 0.9);
+  }
+  
+  /* Highlight the base text of ruby elements (words with furigana) */
+  ruby {
+    background-color: rgba(251, 191, 36, 0.15);
+    padding: 0 2px;
+    border-radius: 2px;
+  }
+  
+  .dark ruby {
+    background-color: rgba(251, 191, 36, 0.1);
   }
 </style>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_13_011830) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_15_224316) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -206,6 +206,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_13_011830) do
     t.integer "level", default: 1, null: false
     t.string "openrouter_api_key"
     t.string "renshuu_api_key"
+    t.string "unknown_kanji_display_mode", default: "furigana", null: false
     t.datetime "updated_at", null: false
     t.string "wanikani_api_key"
     t.index ["email"], name: "index_users_on_email", unique: true

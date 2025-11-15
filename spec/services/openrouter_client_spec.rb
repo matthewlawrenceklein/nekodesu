@@ -34,7 +34,7 @@ RSpec.describe OpenrouterClient do
     it "calls the OpenRouter client with correct parameters" do
       expect_any_instance_of(OpenRouter::Client).to receive(:complete).with(
         messages,
-        model: "anthropic/claude-3.5-sonnet",
+        model: "openai/gpt-4o",
         extras: {
           max_tokens: 2000,
           temperature: 0.7
