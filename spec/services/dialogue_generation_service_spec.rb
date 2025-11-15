@@ -83,7 +83,7 @@ RSpec.describe DialogueGenerationService do
     it "records generation metadata" do
       dialogue = service.generate
 
-      expect(dialogue.model_used).to eq("anthropic/claude-3.5-sonnet")
+      expect(dialogue.model_used).to eq("openai/gpt-4o")
       expect(dialogue.generation_time_ms).to be > 0
       expect(dialogue.min_level).to eq(1)
       expect(dialogue.max_level).to eq(10)
@@ -96,7 +96,7 @@ RSpec.describe DialogueGenerationService do
             hash_including(role: "system"),
             hash_including(role: "user")
           ),
-          model: "anthropic/claude-3.5-sonnet"
+          model: "openai/gpt-4o"
         )
       )
 
@@ -117,7 +117,22 @@ RSpec.describe DialogueGenerationService do
       expect(captured_prompt).to include("元")  # WaniKani kanji
       expect(captured_prompt).to include("食")  # Renshuu kanji
       expect(captured_prompt).to include("こんにちは")  # WaniKani vocab
-      expect(captured_prompt).to include("食べる")  # Renshuu vocab
+      expect(captured_prompt).to include("食べる")  # Renshuu vocab (safe - all kanji known)
+    end
+
+    it "includes hiragana vocabulary section in prompt" do
+      # Capture the prompt sent to OpenRouter
+      captured_prompt = nil
+      allow(openrouter_client).to receive(:chat_completion) do |args|
+        captured_prompt = args[:messages].last[:content]
+        mock_ai_response
+      end
+
+      service.generate
+
+      # Should have separate sections for kanji and hiragana vocabulary
+      expect(captured_prompt).to include("Available Vocabulary - WITH KANJI")
+      expect(captured_prompt).to include("Available Vocabulary - HIRAGANA ONLY")
     end
 
     context "with different difficulty levels" do

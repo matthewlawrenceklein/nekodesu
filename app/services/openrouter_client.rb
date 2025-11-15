@@ -14,7 +14,7 @@ class OpenrouterClient
     @client = OpenRouter::Client.new(access_token: api_key)
   end
 
-  def chat_completion(messages:, model: "anthropic/claude-3.5-sonnet", max_tokens: 2000, temperature: 0.7)
+  def chat_completion(messages:, model: "openai/gpt-4o", max_tokens: 2000, temperature: 0.7)
     response = @client.complete(
       messages,
       model: model,

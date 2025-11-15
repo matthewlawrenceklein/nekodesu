@@ -58,7 +58,7 @@ class DialogueGenerationService
         { role: "system", content: system_prompt },
         { role: "user", content: prompt }
       ],
-      model: "anthropic/claude-3.5-sonnet",
+      model: "openai/gpt-4o",
       max_tokens: 2000,
       temperature: 0.7
     )
@@ -94,7 +94,7 @@ class DialogueGenerationService
                       .pluck(:characters)
                       .compact
 
-    # Get Renshuu vocabulary and kanji (random sample)
+    # Get Renshuu kanji (random sample)
     renshuu_kanji = @user.renshuu_items
                          .kanji
                          .order("RANDOM()")
@@ -102,31 +102,40 @@ class DialogueGenerationService
                          .pluck(:term)
                          .compact
 
-    renshuu_vocab = @user.renshuu_items
-                         .vocab
-                         .order("RANDOM()")
-                         .limit(RENSHUU_VOCAB_SAMPLE_SIZE)
-                         .pluck(:term)
-                         .compact
+    # Smart filtering of Renshuu vocabulary
+    # Separates into safe vocab (all kanji known) and hiragana-only vocab (unknown kanji)
+    filter_service = VocabularyFilterService.new(@user)
+    renshuu_filtered = filter_service.filter_renshuu_vocabulary
 
-    # Combine and deduplicate (union creates a non-redundant superset)
+    # Combine WaniKani vocab with safe Renshuu vocab
     combined_kanji = (wani_kanji + renshuu_kanji).uniq
-    combined_vocab = (wani_vocab + renshuu_vocab).uniq
+    combined_vocab = (wani_vocab + renshuu_filtered[:safe]).uniq
 
     # Limit to reasonable totals for the AI (to avoid token limits)
-    # Randomly sample if we have too many
     final_kanji = combined_kanji.sample([ combined_kanji.length, MAX_KANJI_FOR_PROMPT ].min)
     final_vocab = combined_vocab.sample([ combined_vocab.length, MAX_VOCAB_FOR_PROMPT ].min)
+
+    # Sample hiragana-only vocabulary (limited to avoid overwhelming the prompt)
+    hiragana_vocab = renshuu_filtered[:hiragana_only].sample(100)
 
     {
       kanji: final_kanji,
       vocabulary: final_vocab,
+      hiragana_vocabulary: hiragana_vocab,
       min_level: level_range.min,
       max_level: level_range.max,
       sources: {
         wanikani: { kanji: wani_kanji.count, vocab: wani_vocab.count },
-        renshuu: { kanji: renshuu_kanji.count, vocab: renshuu_vocab.count },
-        total: { kanji: final_kanji.count, vocab: final_vocab.count }
+        renshuu: {
+          kanji: renshuu_kanji.count,
+          vocab_safe: renshuu_filtered[:safe].count,
+          vocab_hiragana: renshuu_filtered[:hiragana_only].count
+        },
+        total: {
+          kanji: final_kanji.count,
+          vocab: final_vocab.count,
+          hiragana_vocab: hiragana_vocab.count
+        }
       }
     }
   end
@@ -205,19 +214,23 @@ class DialogueGenerationService
       Available Kanji (#{vocabulary_data[:kanji].length} randomly selected from WaniKani + Renshuu):
       #{vocabulary_data[:kanji].join(", ")}
 
-      Available Vocabulary (#{vocabulary_data[:vocabulary].length} randomly selected from WaniKani + Renshuu):
+      Available Vocabulary - WITH KANJI (#{vocabulary_data[:vocabulary].length} words):
       #{vocabulary_data[:vocabulary].join(", ")}
+
+      Available Vocabulary - HIRAGANA ONLY (#{vocabulary_data[:hiragana_vocabulary].length} words):
+      #{vocabulary_data[:hiragana_vocabulary].join(", ")}
 
       Grammar Guidelines: #{grammar_notes}
 
       IMPORTANT INSTRUCTIONS:
       1. Choose 2 characters from the list above
       2. Create a natural Japanese dialogue using ONLY the kanji and vocabulary listed above
-      3. CRITICAL: Do NOT use any kanji that is not in the "Available Kanji" list or contained within the "Available Vocabulary" words
-      4. CRITICAL: Do NOT use any vocabulary that is not in the "Available Vocabulary" list
-      5. The dialogue should reflect the characters' personalities, age groups, and relationship
-      6. Use grammar and formality appropriate for #{jlpt_level} level and the characters' relationship
-      7. Include EXACTLY 10 comprehension questions to test understanding of vocabulary, grammar, context, and inference
+      3. CRITICAL: Do NOT use any kanji that is not in the "Available Kanji" list or contained within the "Available Vocabulary - WITH KANJI" words
+      4. CRITICAL: Do NOT use any vocabulary that is not in either vocabulary list
+      5. CRITICAL: For words in "Available Vocabulary - HIRAGANA ONLY", you MUST write them in hiragana in the dialogue. Do NOT convert them to kanji. These are words where the user hasn't learned the kanji yet.
+      6. The dialogue should reflect the characters' personalities, age groups, and relationship
+      7. Use grammar and formality appropriate for #{jlpt_level} level and the characters' relationship
+      8. Include EXACTLY 10 comprehension questions to test understanding of vocabulary, grammar, context, and inference
 
       VOCABULARY COMPLIANCE CHECK:
       Before finalizing your response, verify that every kanji character in your dialogue appears in either:
@@ -272,7 +285,7 @@ class DialogueGenerationService
       max_level: vocabulary_data[:max_level],
       vocabulary_used: vocabulary_data[:vocabulary].first(100),
       kanji_used: vocabulary_data[:kanji].first(100),
-      model_used: "anthropic/claude-3.5-sonnet",
+      model_used: "openai/gpt-4o",
       generation_time_ms: generation_time
     )
 

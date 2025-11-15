@@ -127,25 +127,21 @@ module DialoguesHelper
 
   # Identifies kanji in text that the user hasn't learned yet
   # Returns array of unique unknown kanji characters
+  # Only considers kanji as "known" if they are explicitly studied as individual kanji,
+  # not just appearing in vocabulary words
   def unknown_kanji_in_text(text, user)
     return [] if text.blank? || user.nil?
 
     # Extract all kanji from text (Unicode range for CJK Unified Ideographs)
     kanji_in_text = text.scan(/[\u4E00-\u9FAF]/).uniq
 
-    # Get all kanji the user knows from both WaniKani and Renshuu
+    # Get all kanji the user has explicitly studied from both WaniKani and Renshuu
+    # Only include kanji subjects, not kanji extracted from vocabulary
     known_wani_kanji = user.wani_subjects.visible.kanji.pluck(:characters)
     known_renshuu_kanji = user.renshuu_items.kanji.pluck(:term)
-    known_kanji = (known_wani_kanji + known_renshuu_kanji).uniq
+    all_known_kanji = (known_wani_kanji + known_renshuu_kanji).uniq
 
-    # Also extract kanji from known vocabulary words
-    known_wani_vocab = user.wani_subjects.visible.vocabulary.pluck(:characters)
-    known_renshuu_vocab = user.renshuu_items.vocab.pluck(:term)
-    kanji_from_vocab = (known_wani_vocab + known_renshuu_vocab).join.scan(/[\u4E00-\u9FAF]/).uniq
-
-    all_known_kanji = (known_kanji + kanji_from_vocab).uniq
-
-    # Return kanji that appear in text but not in known kanji
+    # Return kanji that appear in text but not in explicitly studied kanji
     kanji_in_text - all_known_kanji
   end
 

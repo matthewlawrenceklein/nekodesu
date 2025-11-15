@@ -154,7 +154,7 @@ RSpec.describe DialoguesHelper, type: :helper do
     before do
       create(:wani_subject, user: user, characters: "一", subject_type: "kanji")
       create(:wani_subject, user: user, characters: "二", subject_type: "kanji")
-      create(:wani_subject, user: user, characters: "三", subject_type: "vocabulary")
+      create(:wani_subject, user: user, characters: "三", subject_type: "kanji")
       create(:renshuu_item, user: user, term: "四", item_type: "kanji")
     end
 
@@ -182,8 +182,18 @@ RSpec.describe DialoguesHelper, type: :helper do
       expect(unknown).to match_array([ "五", "六", "七" ])
     end
 
-    it 'extracts kanji from known vocabulary' do
+    it 'does not consider kanji from vocabulary as known unless explicitly studied' do
+      # User has vocabulary 野球 but hasn't studied the individual kanji
       create(:wani_subject, user: user, characters: "野球", subject_type: "vocabulary")
+      text = "野球"
+      # Both kanji should be marked as unknown since they're not in kanji subjects
+      expect(helper.unknown_kanji_in_text(text, user)).to match_array([ "野", "球" ])
+    end
+
+    it 'considers kanji known when explicitly studied' do
+      # User has the individual kanji as subjects
+      create(:wani_subject, user: user, characters: "野", subject_type: "kanji")
+      create(:wani_subject, user: user, characters: "球", subject_type: "kanji")
       text = "野球"
       expect(helper.unknown_kanji_in_text(text, user)).to eq([])
     end
