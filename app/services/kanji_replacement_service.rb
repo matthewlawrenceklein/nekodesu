@@ -46,12 +46,12 @@ class KanjiReplacementService
     # Only consider kanji as "known" if explicitly studied as individual kanji
     # NOT if they just appear in vocabulary words
     kanji_in_text = text.scan(/[\u4E00-\u9FAF]/).uniq
-    
+
     # Get explicitly studied kanji only (not from vocabulary)
     wani_kanji = @user.wani_subjects.visible.kanji.pluck(:characters)
     renshuu_kanji = @user.renshuu_items.kanji.pluck(:term)
     explicitly_known = (wani_kanji + renshuu_kanji).uniq
-    
+
     kanji_in_text - explicitly_known
   end
 
