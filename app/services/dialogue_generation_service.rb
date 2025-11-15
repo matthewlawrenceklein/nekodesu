@@ -150,10 +150,18 @@ class DialogueGenerationService
       Your task is to generate a natural Japanese dialogue using ONLY the vocabulary and kanji provided by the user.
       The vocabulary comes from the user's WaniKani and Renshuu study materials.
 
+      CRITICAL CONSTRAINT - VOCABULARY RESTRICTION:
+      You MUST use ONLY the kanji and vocabulary words provided in the user's message.
+      DO NOT use any kanji or vocabulary that is not explicitly listed.
+      If a kanji appears in the provided vocabulary list, you may use it.
+      If a kanji does NOT appear in either the "Available Kanji" or within the "Available Vocabulary" lists, you MUST NOT use it.
+      This is a strict requirement - the user is a language learner and can only read the words they have studied.
+      Using unknown words defeats the purpose of this exercise.
+
       Requirements:
       1. Choose EXACTLY 2 characters from the provided character list to participate in the dialogue
       2. Create dialogue content that is consistent with the chosen characters' personalities, age groups, and occupations
-      3. Use ONLY the kanji and vocabulary words provided (from both WaniKani and Renshuu)
+      3. **STRICTLY USE ONLY** the kanji and vocabulary words provided (from both WaniKani and Renshuu)
       4. Create a natural, conversational dialogue that reflects the relationship between the characters
       5. Match the grammar complexity and formality to the difficulty level:
          - Beginner (N5): Simple present/past tense, basic particles (は、が、を、に、で), polite form (です/ます)
@@ -162,6 +170,8 @@ class DialogueGenerationService
       6. Include EXACTLY 10 comprehension questions with 4 multiple choice options each
       7. Questions should test different aspects: vocabulary, grammar, context, inference
       8. Provide English translations
+
+      REMINDER: Every kanji character in your dialogue MUST appear in either the "Available Kanji" list OR within one of the words in the "Available Vocabulary" list. No exceptions.
 
       Format your response as JSON with this structure:
       {
@@ -200,10 +210,20 @@ class DialogueGenerationService
 
       Grammar Guidelines: #{grammar_notes}
 
-      Please choose 2 characters from the list above and create a natural Japanese dialogue between them using ONLY these kanji and vocabulary words.
-      The dialogue should reflect the characters' personalities, age groups, and relationship.
-      Use grammar and formality appropriate for #{jlpt_level} level and the characters' relationship.
-      Include EXACTLY 10 comprehension questions to test understanding of vocabulary, grammar, context, and inference.
+      IMPORTANT INSTRUCTIONS:
+      1. Choose 2 characters from the list above
+      2. Create a natural Japanese dialogue using ONLY the kanji and vocabulary listed above
+      3. CRITICAL: Do NOT use any kanji that is not in the "Available Kanji" list or contained within the "Available Vocabulary" words
+      4. CRITICAL: Do NOT use any vocabulary that is not in the "Available Vocabulary" list
+      5. The dialogue should reflect the characters' personalities, age groups, and relationship
+      6. Use grammar and formality appropriate for #{jlpt_level} level and the characters' relationship
+      7. Include EXACTLY 10 comprehension questions to test understanding of vocabulary, grammar, context, and inference
+
+      VOCABULARY COMPLIANCE CHECK:
+      Before finalizing your response, verify that every kanji character in your dialogue appears in either:
+      - The "Available Kanji" list above, OR
+      - Within one of the words in the "Available Vocabulary" list above
+      If you find any kanji that doesn't meet this criteria, revise your dialogue to remove it.
     PROMPT
   end
 

@@ -147,4 +147,71 @@ RSpec.describe DialoguesHelper, type: :helper do
       expect(helper.message_alignment_class("山田くん", "田中さん")).to eq("justify-end")
     end
   end
+
+  describe '#unknown_kanji_in_text' do
+    let(:user) { create(:user) }
+
+    before do
+      create(:wani_subject, user: user, characters: "一", subject_type: "kanji")
+      create(:wani_subject, user: user, characters: "二", subject_type: "kanji")
+      create(:wani_subject, user: user, characters: "三", subject_type: "vocabulary")
+      create(:renshuu_item, user: user, term: "四", item_type: "kanji")
+    end
+
+    it 'returns empty array when text is blank' do
+      expect(helper.unknown_kanji_in_text("", user)).to eq([])
+    end
+
+    it 'returns empty array when user is nil' do
+      expect(helper.unknown_kanji_in_text("一二三", nil)).to eq([])
+    end
+
+    it 'returns empty array when all kanji are known' do
+      text = "一二三四"
+      expect(helper.unknown_kanji_in_text(text, user)).to eq([])
+    end
+
+    it 'identifies unknown kanji from WaniKani' do
+      text = "一五"
+      expect(helper.unknown_kanji_in_text(text, user)).to eq([ "五" ])
+    end
+
+    it 'identifies multiple unknown kanji' do
+      text = "一五六七"
+      unknown = helper.unknown_kanji_in_text(text, user)
+      expect(unknown).to match_array([ "五", "六", "七" ])
+    end
+
+    it 'extracts kanji from known vocabulary' do
+      create(:wani_subject, user: user, characters: "野球", subject_type: "vocabulary")
+      text = "野球"
+      expect(helper.unknown_kanji_in_text(text, user)).to eq([])
+    end
+  end
+
+  describe '#add_furigana_to_unknown_kanji' do
+    let(:user) { create(:user) }
+
+    before do
+      create(:wani_subject, user: user, characters: "一", subject_type: "kanji")
+    end
+
+    it 'returns original text when no unknown kanji' do
+      text = "一"
+      expect(helper.add_furigana_to_unknown_kanji(text, user)).to eq(text)
+    end
+
+    it 'wraps unknown kanji with span tag' do
+      text = "一五"
+      result = helper.add_furigana_to_unknown_kanji(text, user)
+      expect(result).to include('<span class="unknown-kanji"')
+      expect(result).to include("五")
+    end
+
+    it 'returns html_safe string' do
+      text = "一五"
+      result = helper.add_furigana_to_unknown_kanji(text, user)
+      expect(result).to be_html_safe
+    end
+  end
 end

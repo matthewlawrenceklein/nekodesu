@@ -16,6 +16,23 @@
           </div>
         <% end %>
 
+        <%# Unknown kanji warning %>
+        <% unknown_kanji = unknown_kanji_in_text(@dialogue.japanese_text, current_user) %>
+        <% if unknown_kanji.any? %>
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+            <div class="flex items-start">
+              <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-500 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-400 mb-1">Unknown Kanji Detected</h3>
+                <p class="text-sm text-yellow-700 dark:text-yellow-500">This dialogue contains kanji you haven't studied yet: <span class="font-bold"><%= unknown_kanji.join(", ") %></span></p>
+                <p class="text-xs text-yellow-600 dark:text-yellow-600 mt-1">These will be <span class="unknown-kanji px-1 rounded">highlighted</span> in the text below.</p>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
         <%# Message-style dialogue display %>
         <div class="space-y-5 mb-8 max-h-[70vh] overflow-y-auto px-2">
           <% dialogue_lines = parse_dialogue_lines(@dialogue.japanese_text) %>
@@ -38,7 +55,7 @@
                   <div class="flex flex-col items-start max-w-[70%]">
                     <span class="text-sm text-gray-500 dark:text-gray-400 mb-1 ml-2"><%= line[:speaker] %></span>
                     <div class="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-bl-sm px-5 py-4">
-                      <p class="text-xl text-gray-900 dark:text-gray-100 font-japanese"><%= line[:text] %></p>
+                      <p class="text-xl text-gray-900 dark:text-gray-100 font-japanese"><%= add_furigana_to_unknown_kanji(line[:text], current_user) %></p>
                     </div>
                   </div>
                 <% else %>
@@ -46,7 +63,7 @@
                   <div class="flex flex-col items-end max-w-[70%]">
                     <span class="text-sm text-gray-500 dark:text-gray-400 mb-1 mr-2"><%= line[:speaker] %></span>
                     <div class="bg-blue-500 dark:bg-blue-600 rounded-2xl rounded-br-sm px-5 py-4">
-                      <p class="text-xl text-white font-japanese"><%= line[:text] %></p>
+                      <p class="text-xl text-white font-japanese"><%= add_furigana_to_unknown_kanji(line[:text], current_user) %></p>
                     </div>
                   </div>
                   <div class="flex-shrink-0">
@@ -105,5 +122,18 @@
   .font-japanese {
     font-family: 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ Pro W3', 'Meiryo', 'メイリオ', sans-serif;
     line-height: 2;
+  }
+  
+  .unknown-kanji {
+    background-color: rgba(251, 191, 36, 0.3);
+    border-bottom: 2px solid rgb(251, 191, 36);
+    padding: 0 2px;
+    border-radius: 2px;
+    cursor: help;
+  }
+  
+  .dark .unknown-kanji {
+    background-color: rgba(251, 191, 36, 0.2);
+    border-bottom-color: rgb(217, 119, 6);
   }
 </style>
