@@ -3,7 +3,7 @@ class OpenaiTtsClient
 
   BASE_URL = "https://api.openai.com/v1"
 
-  def initialize(api_key = ENV["OPENAI_API_KEY"])
+  def initialize(api_key)
     @api_key = api_key
     @connection = Faraday.new(url: BASE_URL) do |f|
       f.request :json

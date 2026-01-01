@@ -39,12 +39,14 @@ RSpec.describe DialogueAudioGenerationService do
       expect_any_instance_of(OpenaiTtsClient).to receive(:generate_speech).with(
         text: "こんにちは",
         voice: "echo",
+        speed: 1.0,
         instructions: kind_of(String)
       ).and_return(mock_audio_data)
 
       expect_any_instance_of(OpenaiTtsClient).to receive(:generate_speech).with(
         text: "元気ですか",
         voice: "onyx",
+        speed: 1.0,
         instructions: kind_of(String)
       ).and_return(mock_audio_data)
 

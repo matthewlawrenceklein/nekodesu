@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_15_224316) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_01_000200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,32 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_15_224316) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "anki_vocabs", force: :cascade do |t|
+    t.bigint "anki_card_id"
+    t.bigint "anki_note_id"
+    t.integer "card_queue"
+    t.integer "card_type"
+    t.datetime "created_at", null: false
+    t.string "deck_name"
+    t.integer "ease_factor"
+    t.integer "interval_days", default: 0
+    t.integer "lapse_count", default: 0
+    t.datetime "last_reviewed_at"
+    t.jsonb "meanings", default: []
+    t.jsonb "note_fields", default: {}
+    t.string "reading"
+    t.integer "review_count", default: 0
+    t.jsonb "tags", default: []
+    t.string "term"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["card_queue"], name: "index_anki_vocabs_on_card_queue"
+    t.index ["card_type"], name: "index_anki_vocabs_on_card_type"
+    t.index ["term"], name: "index_anki_vocabs_on_term"
+    t.index ["user_id", "anki_card_id"], name: "index_anki_vocabs_on_user_id_and_anki_card_id", unique: true
+    t.index ["user_id"], name: "index_anki_vocabs_on_user_id"
   end
 
   create_table "comprehension_questions", force: :cascade do |t|
@@ -204,8 +230,10 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_15_224316) do
     t.datetime "last_renshuu_sync"
     t.datetime "last_wanikani_sync"
     t.integer "level", default: 1, null: false
+    t.string "openai_api_key"
     t.string "openrouter_api_key"
     t.string "renshuu_api_key"
+    t.decimal "speech_speed", precision: 3, scale: 2, default: "1.0"
     t.string "unknown_kanji_display_mode", default: "furigana", null: false
     t.datetime "updated_at", null: false
     t.string "wanikani_api_key"
@@ -239,6 +267,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_15_224316) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "anki_vocabs", "users"
   add_foreign_key "comprehension_questions", "dialogues"
   add_foreign_key "dialogue_attempts", "dialogues"
   add_foreign_key "dialogue_attempts", "users"

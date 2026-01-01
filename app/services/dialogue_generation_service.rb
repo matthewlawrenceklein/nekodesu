@@ -6,6 +6,7 @@ class DialogueGenerationService
   WANIKANI_VOCAB_SAMPLE_SIZE = 200
   RENSHUU_KANJI_SAMPLE_SIZE = 150
   RENSHUU_VOCAB_SAMPLE_SIZE = 200
+  ANKI_VOCAB_SAMPLE_SIZE = 200
   MAX_KANJI_FOR_PROMPT = 200
   MAX_VOCAB_FOR_PROMPT = 300
 
@@ -44,7 +45,8 @@ class DialogueGenerationService
   def initialize(user, difficulty_level: "beginner")
     @user = user
     @difficulty_level = difficulty_level
-    @openrouter_client = OpenrouterClient.new(user.openrouter_api_key || ENV["OPENROUTER_API_KEY"])
+    raise GenerationError, "OpenRouter API key not configured" unless user.openrouter_configured?
+    @openrouter_client = OpenrouterClient.new(user.openrouter_api_key)
   end
 
   def generate
@@ -102,14 +104,23 @@ class DialogueGenerationService
                          .pluck(:term)
                          .compact
 
+    # Get Anki vocabulary (well-known cards only)
+    anki_vocab = @user.anki_vocabs
+                      .well_known
+                      .active
+                      .order("RANDOM()")
+                      .limit(ANKI_VOCAB_SAMPLE_SIZE)
+                      .pluck(:term)
+                      .compact
+
     # Smart filtering of Renshuu vocabulary
     # Separates into safe vocab (all kanji known) and hiragana-only vocab (unknown kanji)
     filter_service = VocabularyFilterService.new(@user)
     renshuu_filtered = filter_service.filter_renshuu_vocabulary
 
-    # Combine WaniKani vocab with safe Renshuu vocab
+    # Combine WaniKani vocab with safe Renshuu vocab and Anki vocab
     combined_kanji = (wani_kanji + renshuu_kanji).uniq
-    combined_vocab = (wani_vocab + renshuu_filtered[:safe]).uniq
+    combined_vocab = (wani_vocab + renshuu_filtered[:safe] + anki_vocab).uniq
 
     # Limit to reasonable totals for the AI (to avoid token limits)
     final_kanji = combined_kanji.sample([ combined_kanji.length, MAX_KANJI_FOR_PROMPT ].min)
@@ -131,6 +142,7 @@ class DialogueGenerationService
           vocab_safe: renshuu_filtered[:safe].count,
           vocab_hiragana: renshuu_filtered[:hiragana_only].count
         },
+        anki: { vocab: anki_vocab.count },
         total: {
           kanji: final_kanji.count,
           vocab: final_vocab.count,
@@ -157,7 +169,7 @@ class DialogueGenerationService
     <<~PROMPT
       You are a Japanese language teacher creating reading comprehension exercises.
       Your task is to generate a natural Japanese dialogue using ONLY the vocabulary and kanji provided by the user.
-      The vocabulary comes from the user's WaniKani and Renshuu study materials.
+      The vocabulary comes from the user's WaniKani, Renshuu, and Anki study materials.
 
       CRITICAL CONSTRAINT - VOCABULARY RESTRICTION:
       You MUST use ONLY the kanji and vocabulary words provided in the user's message.
@@ -214,7 +226,7 @@ class DialogueGenerationService
       Available Kanji (#{vocabulary_data[:kanji].length} randomly selected from WaniKani + Renshuu):
       #{vocabulary_data[:kanji].join(", ")}
 
-      Available Vocabulary - WITH KANJI (#{vocabulary_data[:vocabulary].length} words):
+      Available Vocabulary - WITH KANJI (#{vocabulary_data[:vocabulary].length} words from WaniKani + Renshuu + Anki):
       #{vocabulary_data[:vocabulary].join(", ")}
 
       Available Vocabulary - HIRAGANA ONLY (#{vocabulary_data[:hiragana_vocabulary].length} words):

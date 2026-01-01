@@ -39,6 +39,12 @@ gem "faraday"
 # OpenRouter API integration
 gem "open_router"
 
+# ZIP file handling for Anki imports
+gem "rubyzip"
+
+# SQLite3 for reading Anki database files
+gem "sqlite3"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 

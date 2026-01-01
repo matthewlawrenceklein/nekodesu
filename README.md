@@ -5,10 +5,11 @@ A Rails application that generates personalized Japanese dialogues based on your
 ## Features
 
 ### 🎯 Core Features
-- **Dual Vocabulary Sources**:
+- **Triple Vocabulary Sources**:
   - **WaniKani Integration**: Syncs vocabulary and kanji at or below your current level
   - **Renshuu Integration**: Syncs your studied vocabulary, kanji, grammar points, and sentences
-  - **Smart Combination**: Creates non-redundant superset from both sources
+  - **Anki Integration**: Import your Anki flashcard decks (.apkg files) to include your custom vocabulary
+  - **Smart Combination**: Creates non-redundant superset from all three sources
 - **AI-Powered Dialogues**: Generates natural Japanese conversations using OpenRouter AI (Claude 3.5 Sonnet)
 - **Text-to-Speech Audio**:
   - **OpenAI TTS Integration**: Generates natural-sounding audio for each dialogue line
@@ -68,20 +69,7 @@ A Rails application that generates personalized Japanese dialogues based on your
 
 ## Getting Started
 
-### 1. Clone and Setup Environment
-
-```bash
-# Copy the example environment file
-cp env.example .env
-
-# Edit .env and add your API keys
-# WANIKANI_API_KEY=your_wanikani_key_here
-# RENSHUU_API_KEY=your_renshuu_key_here
-# OPENROUTER_API_KEY=your_openrouter_key_here
-# OPENAI_API_KEY=your_openai_key_here
-```
-
-### 2. Build and Start Services
+### 1. Build and Start Services
 
 ```bash
 # Build the Docker images
@@ -91,7 +79,7 @@ docker compose build
 docker compose up -d
 ```
 
-### 3. Setup Database
+### 2. Setup Database
 
 ```bash
 # Create and migrate the database
@@ -99,11 +87,27 @@ docker compose exec web rails db:create db:migrate
 
 # Create a user (in Rails console)
 docker compose exec web rails console
-# > User.create!(email: "your@email.com", wanikani_api_key: ENV['WANIKANI_API_KEY'], renshuu_api_key: ENV['RENSHUU_API_KEY'], openrouter_api_key: ENV['OPENROUTER_API_KEY'])
+# > User.create!(email: "your@email.com")
 ```
 
-### 4. Sync Vocabulary Data
+### 3. Configure API Keys
 
+Open your browser to [http://localhost:3000/settings](http://localhost:3000/settings)
+
+Configure your API keys through the Settings UI:
+- **WaniKani API Key** - Get from [WaniKani Settings](https://www.wanikani.com/settings/personal_access_tokens)
+- **Renshuu API Key** - Get from [Renshuu API Settings](https://www.renshuu.org/index.php?page=profile/api)
+- **OpenRouter API Key** - Get from [OpenRouter Keys](https://openrouter.ai/keys)
+- **OpenAI API Key** - Get from [OpenAI API Keys](https://platform.openai.com/api-keys)
+- **Speech Speed** - Adjust TTS audio speed (0.25 to 4.0, default 1.0)
+
+### 4. Import Vocabulary (Optional)
+
+**Import Anki Decks:**
+- Go to Settings and upload your `.apkg` files
+- Only well-known cards (21+ day intervals) are used in dialogues
+
+**Sync WaniKani & Renshuu:**
 ```bash
 # Sync WaniKani vocabulary and kanji (this will take a few minutes)
 docker compose exec web rails "wanikani:sync[1]"  # Replace 1 with your user ID
@@ -116,7 +120,9 @@ docker compose exec web rails "wanikani:reset_and_resync[1]"
 docker compose exec web rails "renshuu:reset_and_resync[1]"
 ```
 
-### 5. Generate Initial Dialogues
+### 5. Generate Dialogues
+
+Use the web UI at [http://localhost:3000/dialogues/new](http://localhost:3000/dialogues/new) or via command line:
 
 ```bash
 # Generate 10 beginner dialogues
@@ -129,8 +135,9 @@ Open your browser to [http://localhost:3000](http://localhost:3000)
 
 **Available Pages:**
 - `/` - Dashboard with stats, "Start Reading" and "Start Listening" buttons
-- `/dialogues/:id/listen` - Audio listening mode with text reveal
+- `/settings` - Configure API keys, import Anki decks, adjust audio settings
 - `/dialogues/new` - Generate more dialogues
+- `/dialogues/:id/listen` - Audio listening mode with text reveal
 - `/good_job` - Background job monitoring
 
 ## Development
@@ -277,9 +284,17 @@ docker compose exec web bundle exec rubocop -A
 - Runs automatically every 6 hours (at :03, offset from WaniKani)
 - Stores items in local database
 
+**Anki:**
+- Import your Anki flashcard decks (.apkg files) via the web UI
+- Extracts Japanese vocabulary from card fields
+- Preserves review statistics (intervals, lapses, review counts)
+- Only well-known cards (21+ day intervals) are used in dialogue generation
+- Supports re-importing to update existing cards
+- Manual import only (no automatic sync)
+
 ### 2. Dialogue Generation
-- **Random Sampling**: Selects up to 150 kanji + 200 vocab from each source
-- **Combines & Deduplicates**: Creates non-redundant superset from both WaniKani and Renshuu
+- **Random Sampling**: Selects up to 150 kanji + 200 vocab from WaniKani, Renshuu, and Anki
+- **Combines & Deduplicates**: Creates non-redundant superset from all three sources
 - **Final Selection**: Randomly picks up to 200 kanji + 300 vocab for the AI prompt
 - **AI Generation**: Sends combined vocabulary to OpenRouter AI (Claude 3.5 Sonnet)
 - AI generates natural Japanese dialogue using ONLY the provided words
@@ -310,9 +325,10 @@ docker compose exec web bundle exec rubocop -A
 
 ## Key Design Decisions
 
-- **Dual vocabulary sources**: Combines WaniKani (level-based) + Renshuu (all studied items) for maximum coverage
+- **Triple vocabulary sources**: Combines WaniKani (level-based) + Renshuu (all studied items) + Anki (well-known cards) for maximum coverage
 - **Smart sampling**: Random selection from combined pool ensures variety while respecting token limits
 - **Non-redundant superset**: Deduplicates overlapping items between sources
+- **Anki mastery filtering**: Only uses Anki cards with 21+ day intervals to ensure vocabulary is well-known
 - **Character-specific voices**: Each character has a unique TTS voice for natural conversation feel
 - **Async audio generation**: Background processing prevents UI blocking, with retry logic for reliability
 - **Text reveal with selectability**: Overlay approach obscures text while maintaining copy/paste functionality
@@ -332,10 +348,13 @@ This application is Docker-ready and can be deployed to any container platform. 
 - `RAILS_ENV=production`
 - `DATABASE_URL` - PostgreSQL connection string
 - `SECRET_KEY_BASE` - Rails secret
-- `WANIKANI_API_KEY` - For WaniKani syncing (or per-user)
-- `RENSHUU_API_KEY` - For Renshuu syncing (or per-user)
-- `OPENROUTER_API_KEY` - For AI generation (or per-user)
-- `OPENAI_API_KEY` - For TTS audio generation (or per-user)
+
+**API Key Configuration:**
+All API keys are now configured per-user through the Settings UI (`/settings`). Users must configure their own API keys before using the application features:
+- WaniKani API Key - Required for vocabulary sync
+- Renshuu API Key - Required for Renshuu integration
+- OpenRouter API Key - Required for dialogue generation
+- OpenAI API Key - Required for audio generation
 
 ## License
 

@@ -1,0 +1,169 @@
+<div class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4">
+  <div class="max-w-4xl mx-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Settings</h1>
+
+      <%= form_with model: @user, url: settings_path, method: :patch, class: "space-y-8" do |form| %>
+        <% if @user.errors.any? %>
+          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <h3 class="font-semibold text-red-900 dark:text-red-100 mb-2">
+              <%= pluralize(@user.errors.count, "error") %> prohibited this from being saved:
+            </h3>
+            <ul class="list-disc list-inside text-sm text-red-800 dark:text-red-200">
+              <% @user.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <section class="border-b border-gray-200 dark:border-gray-700 pb-8">
+          <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">API Keys</h2>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            Configure your API keys for vocabulary sync and dialogue generation.
+          </p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                WaniKani API Key
+              </label>
+              <%= form.text_field :wanikani_api_key,
+                  class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+                  placeholder: "Enter your WaniKani API key" %>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Get your key from <a href="https://www.wanikani.com/settings/personal_access_tokens" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">WaniKani Settings</a>
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Renshuu API Key
+              </label>
+              <%= form.text_field :renshuu_api_key,
+                  class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+                  placeholder: "Enter your Renshuu API key" %>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Get your key from <a href="https://www.renshuu.org/index.php?page=profile/api" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">Renshuu API Settings</a>
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                OpenRouter API Key
+              </label>
+              <%= form.text_field :openrouter_api_key,
+                  class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+                  placeholder: "Enter your OpenRouter API key" %>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Get your key from <a href="https://openrouter.ai/keys" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">OpenRouter Keys</a>
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                OpenAI API Key
+              </label>
+              <%= form.text_field :openai_api_key,
+                  class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+                  placeholder: "Enter your OpenAI API key" %>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Get your key from <a href="https://platform.openai.com/api-keys" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">OpenAI API Keys</a>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="border-b border-gray-200 dark:border-gray-700 pb-8">
+          <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Audio Settings</h2>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            Configure text-to-speech audio generation settings.
+          </p>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Speech Speed
+            </label>
+            <%= form.number_field :speech_speed,
+                step: 0.25,
+                min: 0.25,
+                max: 4.0,
+                class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Range: 0.25 to 4.0 (1.0 is normal speed, higher is faster)
+            </p>
+          </div>
+        </section>
+
+        <div class="flex gap-4">
+          <%= form.submit "Save Settings",
+              class: "flex-1 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200" %>
+          <%= link_to "Back to Dashboard",
+              root_path,
+              class: "flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-3 px-6 rounded-lg transition duration-200 text-center" %>
+        </div>
+      <% end %>
+
+      <section class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Anki Import</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+          Import your Anki flashcard decks to enhance dialogue generation with your custom vocabulary.
+        </p>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+          <h3 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">📊 Current Statistics</h3>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span class="text-blue-700 dark:text-blue-300">Total Anki Cards:</span>
+              <span class="font-bold ml-2"><%= @anki_vocab_count %></span>
+            </div>
+            <div>
+              <span class="text-blue-700 dark:text-blue-300">Well-Known Cards:</span>
+              <span class="font-bold ml-2"><%= @well_known_count %></span>
+            </div>
+          </div>
+        </div>
+
+        <%= form_with url: import_anki_settings_path, method: :post, multipart: true, class: "space-y-4" do |form| %>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Select Anki Deck (.apkg file)
+            </label>
+            <%= form.file_field :apkg_file,
+                accept: ".apkg",
+                required: true,
+                class: "block w-full text-sm text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Export your deck from Anki Desktop with "Include scheduling information" enabled.
+            </p>
+          </div>
+
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <h4 class="font-semibold text-yellow-900 dark:text-yellow-100 mb-2">ℹ️ Import Notes</h4>
+            <ul class="text-sm text-yellow-800 dark:text-yellow-200 space-y-1 list-disc list-inside">
+              <li>Only cards with Japanese vocabulary will be imported</li>
+              <li>Suspended cards are included but not used in dialogue generation</li>
+              <li>Card review statistics (intervals, lapses) are preserved</li>
+              <li>Re-importing the same deck will update existing cards</li>
+              <li>Only well-known cards (21+ day intervals) are used for dialogues</li>
+            </ul>
+          </div>
+
+          <%= form.submit "Import Deck",
+              class: "w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200" %>
+        <% end %>
+
+        <% if @anki_vocab_count > 0 %>
+          <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Danger Zone</h3>
+            <%= button_to "Delete All Anki Vocabulary",
+                destroy_anki_settings_path,
+                method: :delete,
+                data: { confirm: "Are you sure? This will delete all #{@anki_vocab_count} Anki vocabulary items. This action cannot be undone." },
+                class: "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-200" %>
+          </div>
+        <% end %>
+      </section>
+    </div>
+  </div>
+</div>

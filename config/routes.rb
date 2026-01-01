@@ -26,5 +26,10 @@ Rails.application.routes.draw do
     end
   end
 
+  resource :settings, only: [ :show, :update ] do
+    post :import_anki
+    delete :destroy_anki
+  end
+
   mount GoodJob::Engine => "good_job"
 end

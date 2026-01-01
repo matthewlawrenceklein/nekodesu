@@ -49,12 +49,12 @@ RSpec.describe DialogueGenerationService do
       described_class.new(user)
     end
 
-    it "uses ENV variable if user doesn't have API key" do
+    it "raises error if user doesn't have API key" do
       user_without_key = create(:user, openrouter_api_key: nil)
-      allow(ENV).to receive(:[]).with("OPENROUTER_API_KEY").and_return("env_key")
 
-      expect(OpenrouterClient).to receive(:new).with("env_key")
-      described_class.new(user_without_key)
+      expect {
+        described_class.new(user_without_key)
+      }.to raise_error(DialogueGenerationService::GenerationError, "OpenRouter API key not configured")
     end
   end
 

@@ -5,7 +5,9 @@ class DialogueAudioGenerationService
 
   def initialize(dialogue)
     @dialogue = dialogue
-    @tts_client = OpenaiTtsClient.new
+    @user = dialogue.user
+    raise GenerationError, "OpenAI API key not configured" unless @user.openai_configured?
+    @tts_client = OpenaiTtsClient.new(@user.openai_api_key)
   end
 
   def generate
@@ -22,6 +24,7 @@ class DialogueAudioGenerationService
         audio_data = @tts_client.generate_speech(
           text: line[:text],
           voice: voice,
+          speed: @user.speech_speed || 1.0,
           instructions: instructions
         )
 

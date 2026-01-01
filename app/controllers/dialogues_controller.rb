@@ -48,8 +48,14 @@ class DialoguesController < ApplicationController
   end
 
   def listen
-    # Show audio listening interface
-    # Audio files are stored in dialogue.audio_files JSONB
+    @attempt = @user.dialogue_attempts.in_progress.where(dialogue: @dialogue).order(created_at: :desc).first
+
+    unless @attempt
+      @attempt = @user.dialogue_attempts.create!(
+        dialogue: @dialogue,
+        total_questions: DialogueAttempt::QUESTIONS_PER_ATTEMPT
+      )
+    end
   end
 
   def ready
@@ -104,6 +110,16 @@ class DialoguesController < ApplicationController
   end
 
   def generate
+    unless @user.openrouter_configured?
+      redirect_to settings_path, alert: "Please configure your OpenRouter API key in settings before generating dialogues."
+      return
+    end
+
+    unless @user.openai_configured?
+      redirect_to settings_path, alert: "Please configure your OpenAI API key in settings for audio generation."
+      return
+    end
+
     count = params[:count].to_i.clamp(1, 20)
     difficulty = params[:difficulty_level] || "beginner"
 

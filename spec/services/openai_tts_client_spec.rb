@@ -9,11 +9,8 @@ RSpec.describe OpenaiTtsClient do
       expect(client.instance_variable_get(:@api_key)).to eq(api_key)
     end
 
-    it "uses ENV variable if no API key provided" do
-      allow(ENV).to receive(:[]).and_call_original
-      allow(ENV).to receive(:[]).with("OPENAI_API_KEY").and_return("env-api-key")
-      client = described_class.new
-      expect(client.instance_variable_get(:@api_key)).to eq("env-api-key")
+    it "requires API key to be provided" do
+      expect(client.instance_variable_get(:@api_key)).to eq(api_key)
     end
 
     it "creates a Faraday connection" do
