@@ -34,10 +34,11 @@ done
 
 # Login to GitHub Container Registry
 echo "🔐 Logging in to GitHub Container Registry..."
-if [ -n "$GITHUB_TOKEN" ]; then
+if [ -n "$GITHUB_TOKEN" ] && [ -n "$GITHUB_USER" ]; then
     echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_USER" --password-stdin
 else
-    echo "⚠️  GITHUB_TOKEN not set, assuming public image or already logged in"
+    echo "⚠️  GITHUB_TOKEN or GITHUB_USER not set, skipping login"
+    echo "   If image pull fails, add GITHUB_TOKEN and GITHUB_USER to .env.production"
 fi
 
 # Pull latest images
