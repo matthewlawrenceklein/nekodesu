@@ -352,7 +352,7 @@ For deployment to Hetzner VPC with Cloudflare Tunnel:
 
 ```bash
 # On your Hetzner server
-bash <(curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/nekodesu/main/script/server-setup.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/matthewlawrenceklein/nekodesu/main/script/server-setup.sh)
 
 # Configure environment
 nano /opt/nekodesu/.env.production

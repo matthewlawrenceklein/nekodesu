@@ -50,7 +50,7 @@ ssh root@YOUR_HETZNER_IP
 
 ```bash
 # Download and run the setup script
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/nekodesu/main/script/server-setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/matthewlawrenceklein/nekodesu/main/script/server-setup.sh | bash
 
 # Or if you've already cloned the repo:
 cd /opt/nekodesu

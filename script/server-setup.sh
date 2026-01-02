@@ -44,8 +44,7 @@ cd /opt/nekodesu
 # Clone repository (if not already cloned)
 if [ ! -d ".git" ]; then
     echo "📥 Cloning repository..."
-    echo "Enter your GitHub repository URL (e.g., https://github.com/username/nekodesu.git):"
-    read REPO_URL
+    REPO_URL="https://github.com/matthewlawrenceklein/nekodesu.git"
     git clone $REPO_URL .
 else
     echo "✅ Repository already cloned"
@@ -110,7 +109,7 @@ echo "1. Edit production environment file:"
 echo "   nano /opt/nekodesu/.env.production"
 echo ""
 echo "2. Generate Rails secrets:"
-echo "   docker run --rm ghcr.io/${GITHUB_REPOSITORY:-username/nekodesu}:latest rails secret"
+echo "   docker run --rm ghcr.io/matthewlawrenceklein/nekodesu:latest rails secret"
 echo ""
 echo "3. Setup Cloudflare Tunnel:"
 echo "   cd /opt/nekodesu && ./script/setup-cloudflare-tunnel.sh"
