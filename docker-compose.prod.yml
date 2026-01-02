@@ -1,0 +1,77 @@
+services:
+  db:
+    image: postgres:16
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nekodesu}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-nekodesu_production}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nekodesu}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nekodesu_network
+
+  web:
+    image: ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nekodesu}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-nekodesu_production}
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      RAILS_LOG_TO_STDOUT: "true"
+      RAILS_SERVE_STATIC_FILES: "true"
+    volumes:
+      - storage_data:/rails/storage
+    networks:
+      - nekodesu_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/up || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  worker:
+    image: ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_TAG:-latest}
+    command: bundle exec good_job start
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nekodesu}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-nekodesu_production}
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      RAILS_LOG_TO_STDOUT: "true"
+    volumes:
+      - storage_data:/rails/storage
+    networks:
+      - nekodesu_network
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - nekodesu_network
+
+volumes:
+  postgres_data:
+  storage_data:
+
+networks:
+  nekodesu_network:
+    driver: bridge

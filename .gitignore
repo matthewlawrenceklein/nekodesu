@@ -39,3 +39,10 @@
 
 # Ignore test coverage reports
 /coverage
+
+# ignore production credentials & secrets
+.env.production
+config/master.key
+*.pem
+*.key
+*_rsa

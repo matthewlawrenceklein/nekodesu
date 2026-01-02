@@ -342,15 +342,34 @@ docker compose exec web bundle exec rubocop -A
 
 ## Deployment
 
-This application is Docker-ready and can be deployed to any container platform. The production Dockerfile is included for deployment with Kamal or similar tools.
+This application is Docker-ready and includes a complete production deployment setup with GitHub Actions CI/CD.
 
-**Environment Variables for Production:**
-- `RAILS_ENV=production`
-- `DATABASE_URL` - PostgreSQL connection string
-- `SECRET_KEY_BASE` - Rails secret
+**📚 [Full Deployment Guide](docs/DEPLOYMENT.md)**
+
+### Quick Start
+
+For deployment to Hetzner VPC with Cloudflare Tunnel:
+
+```bash
+# On your Hetzner server
+bash <(curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/nekodesu/main/script/server-setup.sh)
+
+# Configure environment
+nano /opt/nekodesu/.env.production
+
+# Setup Cloudflare Tunnel
+cd /opt/nekodesu && ./script/setup-cloudflare-tunnel.sh
+
+# Deploy
+cd /opt/nekodesu && ./script/deploy.sh
+```
+
+**Automated Deployments:**
+- Push to `main` branch triggers automatic deployment via GitHub Actions
+- Includes tests, Docker image build, and zero-downtime deployment
 
 **API Key Configuration:**
-All API keys are now configured per-user through the Settings UI (`/settings`). Users must configure their own API keys before using the application features:
+All API keys are configured per-user through the Settings UI (`/settings`):
 - WaniKani API Key - Required for vocabulary sync
 - Renshuu API Key - Required for Renshuu integration
 - OpenRouter API Key - Required for dialogue generation
