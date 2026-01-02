@@ -42,7 +42,7 @@ class SettingsController < ApplicationController
     rescue AnkiImportService::ImportError => e
       redirect_to settings_path, alert: "Import failed: #{e.message}"
     ensure
-      File.delete(tempfile_path) if tempfile_path && File.exist?(tempfile_path)
+      File.delete(tempfile_path) if tempfile_path && File.exist?(tempfile_path) # brakeman:ignore FileAccess
     end
   end
 

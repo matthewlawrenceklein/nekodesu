@@ -1,0 +1,46 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "6cf2fa1fa830dc2474fc83c0b2a9028fdf4c8682a182e50a3a41f4e3126e28be",
+      "check_name": "FileAccess",
+      "message": "Parameter value used in file name",
+      "file": "app/controllers/settings_controller.rb",
+      "line": 45,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "File.delete(save_uploaded_file(params[:apkg_file]))",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "SettingsController",
+        "method": "import_anki"
+      },
+      "user_input": "params[:apkg_file]",
+      "confidence": "Weak",
+      "note": "Safe: tempfile is created and controlled by save_uploaded_file method, validated .apkg extension, cleaned up after use"
+    },
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "0ad11d6652dfff3191e0edb4d653fc586c39166a2312b5ec086f0333c1df23d3",
+      "check_name": "FileAccess",
+      "message": "Parameter value used in file name",
+      "file": "app/controllers/anki_imports_controller.rb",
+      "line": 37,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "File.delete(save_uploaded_file(params[:apkg_file]))",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "AnkiImportsController",
+        "method": "create"
+      },
+      "user_input": "params[:apkg_file]",
+      "confidence": "Weak",
+      "note": "Safe: tempfile is created and controlled by save_uploaded_file method, validated .apkg extension, cleaned up after use"
+    }
+  ],
+  "updated": "2026-01-02 22:10:00 +0000",
+  "brakeman_version": "7.1.2"
+}
