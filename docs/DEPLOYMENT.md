@@ -105,37 +105,59 @@ cat config/master.key
 
 ## Cloudflare Tunnel Setup
 
-### Option 1: Cloudflare Dashboard (Recommended)
+On your Hetzner server, run the following commands:
 
-1. Go to [Cloudflare Zero Trust Dashboard](https://one.dash.cloudflare.com/)
-2. Select your domain
-3. Navigate to **Traffic** → **Cloudflare Tunnel**
-4. Click **Create a tunnel**
-5. Name it `nekodesu` and save
-6. Copy the tunnel token
-7. Add the token to `/opt/nekodesu/.env.production`:
-   ```bash
-   CLOUDFLARE_TUNNEL_TOKEN=your_token_here
-   ```
-8. In the tunnel configuration, add a **Public Hostname**:
-   - **Subdomain**: your-subdomain (e.g., `nekodesu`)
-   - **Domain**: your-domain.com
-   - **Service**: `http://web:80`
-9. Save the configuration
-
-### Option 2: CLI Setup
+### 1. Install cloudflared
 
 ```bash
-cd /opt/nekodesu
-./script/setup-cloudflare-tunnel.sh
+curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+sudo dpkg -i cloudflared.deb
+rm cloudflared.deb
 ```
 
-Follow the interactive prompts to:
-- Install cloudflared
-- Authenticate with Cloudflare
-- Create tunnel
-- Configure DNS routing
-- Get tunnel token
+### 2. Authenticate with Cloudflare
+
+```bash
+cloudflared tunnel login
+```
+
+This will output a URL. Open it in your browser and select your domain to authorize cloudflared.
+
+### 3. Create the tunnel
+
+```bash
+cloudflared tunnel create nekodesu
+```
+
+This creates a tunnel named `nekodesu` and generates credentials.
+
+### 4. Get the tunnel token
+
+```bash
+cloudflared tunnel token nekodesu
+```
+
+Copy the token output and add it to `/opt/nekodesu/.env.production`:
+```bash
+CLOUDFLARE_TUNNEL_TOKEN=your_actual_token_here
+```
+
+### 5. Route DNS to the tunnel
+
+Replace `your-subdomain` with your desired subdomain:
+
+```bash
+cloudflared tunnel route dns nekodesu your-subdomain.your-domain.com
+```
+
+For example:
+```bash
+cloudflared tunnel route dns nekodesu nekodesu.dogbeach.club
+```
+
+This automatically creates a CNAME record in Cloudflare DNS pointing to your tunnel.
+
+**Note:** The tunnel will start automatically when you run the deployment script, as it's included in `docker-compose.prod.yml`.
 
 ## GitHub Actions Setup
 
