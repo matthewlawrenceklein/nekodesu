@@ -60,8 +60,11 @@ services:
 
   cloudflared:
     image: cloudflare/cloudflared:latest
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate run
     restart: unless-stopped
+    volumes:
+      - ./cloudflared-config.yml:/etc/cloudflared/config.yml:ro
+      - ./cloudflared-credentials.json:/etc/cloudflared/credentials.json:ro
     depends_on:
       web:
         condition: service_healthy

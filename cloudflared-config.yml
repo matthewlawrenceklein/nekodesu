@@ -1,0 +1,7 @@
+tunnel: nekodesu
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  - hostname: nekodesu.dogbeach.club
+    service: http://web:80
+  - service: http_status:404
