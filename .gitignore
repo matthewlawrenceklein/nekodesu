@@ -34,12 +34,9 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
-# Ignore master key for decrypting credentials and more.
-/config/master.key
-/config/credentials/*.key
-
 # Cloudflare Tunnel credentials
 cloudflared-credentials.json
+cloudflared-cert.pem
 
 /app/assets/builds/*
 !/app/assets/builds/.keep

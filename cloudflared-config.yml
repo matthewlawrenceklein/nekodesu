@@ -1,5 +1,6 @@
 tunnel: nekodesu
 credentials-file: /etc/cloudflared/credentials.json
+origincert: /etc/cloudflared/cert.pem
 
 ingress:
   - hostname: nekodesu.dogbeach.club
